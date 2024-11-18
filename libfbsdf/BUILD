@@ -7,3 +7,12 @@ cc_library(
     srcs = ["bsdf_header_reader.cc"],
     hdrs = ["bsdf_header_reader.h"],
 )
+
+cc_test(
+    name = "bsdf_header_reader_test",
+    srcs = ["bsdf_header_reader_test.cc"],
+    deps = [
+        ":bsdf_header_reader",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

@@ -51,7 +51,11 @@ bool ParseMagicString(std::istream& input) {
 std::expected<void, std::string> CheckVersion(std::istream& input,
                                               BsdfHeader* header) {
   char c;
-  if (!input.get(c) || c != 1) {
+  if (!input.get(c)) {
+    return std::unexpected(UnexpectedEOF());
+  }
+
+  if (c != 1) {
     return std::unexpected("Only BSDF version 1 is supported");
   }
 
@@ -67,7 +71,7 @@ std::expected<void, std::string> ParseFlags(std::istream& input,
     return error;
   }
 
-  if (flags & 0xFFFFFFFCu) {
+  if (flags > 3u) {
     return std::unexpected("Reserved flags were set to non-zero values");
   }
 
@@ -114,7 +118,7 @@ std::expected<void, std::string> CheckReservedBytes(std::istream& input) {
     return std::unexpected(error.error());
   }
 
-  if (!reserved != 0u) {
+  if (reserved != 0u) {
     return std::unexpected("Reserved bytes were set to non-zero values");
   }
 
@@ -145,6 +149,10 @@ std::expected<void, std::string> CheckReservedBytes(std::istream& input) {
 // };
 
 std::expected<BsdfHeader, std::string> ReadBsdfHeader(std::istream& input) {
+  if (input.fail()) {
+    return std::unexpected("Bad stream passed");
+  }
+
   BsdfHeader result;
 
   if (!ParseMagicString(input)) {
