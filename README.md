@@ -1,2 +1,2 @@
-# libFBRDF
-A zero-dependency Fourier BRDF file reader for C++23
+# libFBSDF
+A zero-dependency Fourier BSDF file reader for C++23

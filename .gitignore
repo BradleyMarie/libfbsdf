@@ -34,16 +34,16 @@
 # Build artifacts
 bazel-bin/
 bazel-genfiles/
-bazel-libfbrdf/
-bazel-libfbrdf-cpp/
+bazel-libfbsdf/
+bazel-libfbsdf-cpp/
 bazel-out/
 bazel-testlogs/
 
 # Build artifacts as files
 bazel-bin
 bazel-genfiles
-bazel-libfbrdf
-bazel-libfbrdf-cpp
+bazel-libfbsdf
+bazel-libfbsdf-cpp
 bazel-out
 bazel-testlogs
 
