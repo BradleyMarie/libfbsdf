@@ -4,15 +4,15 @@
 #include <cstdint>
 #include <expected>
 #include <istream>
-#include <string>
+#include <string_view>
 
 namespace libfbsdf {
 namespace {
 
-std::string UnexpectedEOF() { return "Unexpected EOF"; }
+std::string_view UnexpectedEOF() { return "Unexpected EOF"; }
 
-std::expected<void, std::string> ParseUInt32(std::istream& input,
-                                             uint32_t* value) {
+std::expected<void, std::string_view> ParseUInt32(std::istream& input,
+                                                  uint32_t* value) {
   input.read(reinterpret_cast<char*>(value), sizeof(*value));
   if (!input) {
     return std::unexpected(UnexpectedEOF());
@@ -22,10 +22,11 @@ std::expected<void, std::string> ParseUInt32(std::istream& input,
     *value = std::byteswap(*value);
   }
 
-  return std::expected<void, std::string>();
+  return std::expected<void, std::string_view>();
 }
 
-std::expected<void, std::string> ParseFloat(std::istream& input, float* value) {
+std::expected<void, std::string_view> ParseFloat(std::istream& input,
+                                                 float* value) {
   uint32_t bytes;
   input.read(reinterpret_cast<char*>(&bytes), sizeof(bytes));
   if (!input) {
@@ -38,7 +39,7 @@ std::expected<void, std::string> ParseFloat(std::istream& input, float* value) {
 
   *value = std::bit_cast<float>(bytes);
 
-  return std::expected<void, std::string>();
+  return std::expected<void, std::string_view>();
 }
 
 bool ParseMagicString(std::istream& input) {
@@ -48,8 +49,8 @@ bool ParseMagicString(std::istream& input) {
          input.get(c) && c == 'U' && input.get(c) && c == 'N';
 }
 
-std::expected<void, std::string> CheckVersion(std::istream& input,
-                                              BsdfHeader* header) {
+std::expected<void, std::string_view> CheckVersion(std::istream& input,
+                                                   BsdfHeader* header) {
   char c;
   if (!input.get(c)) {
     return std::unexpected(UnexpectedEOF());
@@ -61,11 +62,11 @@ std::expected<void, std::string> CheckVersion(std::istream& input,
 
   header->version = 1;
 
-  return std::expected<void, std::string>();
+  return std::expected<void, std::string_view>();
 }
 
-std::expected<void, std::string> ParseFlags(std::istream& input,
-                                            BsdfHeader* header) {
+std::expected<void, std::string_view> ParseFlags(std::istream& input,
+                                                 BsdfHeader* header) {
   uint32_t flags;
   if (auto error = ParseUInt32(input, &flags); !error) {
     return error;
@@ -78,11 +79,11 @@ std::expected<void, std::string> ParseFlags(std::istream& input,
   header->is_bsdf = flags & 1u;
   header->is_harmonic_extrapolation = flags & 2u;
 
-  return std::expected<void, std::string>();
+  return std::expected<void, std::string_view>();
 }
 
-std::expected<void, std::string> ParseEta(std::istream& input,
-                                          BsdfHeader* header) {
+std::expected<void, std::string_view> ParseEta(std::istream& input,
+                                               BsdfHeader* header) {
   if (auto error = ParseFloat(input, &header->eta); !error) {
     return error;
   }
@@ -91,11 +92,11 @@ std::expected<void, std::string> ParseEta(std::istream& input,
     return std::unexpected("Invalid value for eta");
   }
 
-  return std::expected<void, std::string>();
+  return std::expected<void, std::string_view>();
 }
 
-std::expected<void, std::string> ParseAlpha(std::istream& input,
-                                            BsdfHeader* header) {
+std::expected<void, std::string_view> ParseAlpha(std::istream& input,
+                                                 BsdfHeader* header) {
   if (auto error = ParseFloat(input, &header->alpha[0]); !error) {
     return error;
   }
@@ -109,10 +110,10 @@ std::expected<void, std::string> ParseAlpha(std::istream& input,
     return std::unexpected("Invalid value for alpha");
   }
 
-  return std::expected<void, std::string>();
+  return std::expected<void, std::string_view>();
 }
 
-std::expected<void, std::string> CheckReservedBytes(std::istream& input) {
+std::expected<void, std::string_view> CheckReservedBytes(std::istream& input) {
   uint32_t reserved;
   if (auto error = ParseUInt32(input, &reserved); !error) {
     return std::unexpected(error.error());
@@ -122,7 +123,7 @@ std::expected<void, std::string> CheckReservedBytes(std::istream& input) {
     return std::unexpected("Reserved bytes were set to non-zero values");
   }
 
-  return std::expected<void, std::string>();
+  return std::expected<void, std::string_view>();
 }
 
 }  // namespace
@@ -145,10 +146,11 @@ std::expected<void, std::string> CheckReservedBytes(std::istream& input) {
 //     uint32_t nParameterValues;
 //     float eta;
 //     float alpha[2];
-//     float unused[2];
+//     float reserved[2];
 // };
 
-std::expected<BsdfHeader, std::string> ReadBsdfHeader(std::istream& input) {
+std::expected<BsdfHeader, std::string_view> ReadBsdfHeader(
+    std::istream& input) {
   if (input.fail()) {
     return std::unexpected("Bad stream passed");
   }

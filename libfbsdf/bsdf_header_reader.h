@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <expected>
 #include <istream>
-#include <string>
+#include <string_view>
 
 namespace libfbsdf {
 
@@ -50,7 +50,7 @@ struct BsdfHeader final {
 };
 
 // NOTE: Behavior is undefined if input is not a binary stream
-std::expected<BsdfHeader, std::string> ReadBsdfHeader(std::istream& input);
+std::expected<BsdfHeader, std::string_view> ReadBsdfHeader(std::istream& input);
 
 }  // namespace libfbsdf
 
