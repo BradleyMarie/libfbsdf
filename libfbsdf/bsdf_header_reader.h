@@ -16,7 +16,7 @@ struct BsdfHeader final {
   bool is_bsdf;
 
   // Indicates if the BSDF coefficients use harmonic extrapolation
-  bool is_harmonic_extrapolation;
+  bool uses_harmonic_extrapolation;
 
   // The number of samples in the elevational discretization
   uint32_t num_nodes;

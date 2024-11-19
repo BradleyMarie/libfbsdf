@@ -13,8 +13,7 @@ std::string_view UnexpectedEOF() { return "Unexpected EOF"; }
 
 std::expected<void, std::string_view> ParseUInt32(std::istream& input,
                                                   uint32_t* value) {
-  input.read(reinterpret_cast<char*>(value), sizeof(*value));
-  if (!input) {
+  if (!input.read(reinterpret_cast<char*>(value), sizeof(*value))) {
     return std::unexpected(UnexpectedEOF());
   }
 
@@ -28,8 +27,7 @@ std::expected<void, std::string_view> ParseUInt32(std::istream& input,
 std::expected<void, std::string_view> ParseFloat(std::istream& input,
                                                  float* value) {
   uint32_t bytes;
-  input.read(reinterpret_cast<char*>(&bytes), sizeof(bytes));
-  if (!input) {
+  if (!input.read(reinterpret_cast<char*>(&bytes), sizeof(bytes))) {
     return std::unexpected(UnexpectedEOF());
   }
 
@@ -68,8 +66,8 @@ std::expected<void, std::string_view> CheckVersion(std::istream& input,
 std::expected<void, std::string_view> ParseFlags(std::istream& input,
                                                  BsdfHeader* header) {
   uint32_t flags;
-  if (auto error = ParseUInt32(input, &flags); !error) {
-    return error;
+  if (auto result = ParseUInt32(input, &flags); !result) {
+    return result;
   }
 
   if (flags > 3u) {
@@ -77,15 +75,15 @@ std::expected<void, std::string_view> ParseFlags(std::istream& input,
   }
 
   header->is_bsdf = flags & 1u;
-  header->is_harmonic_extrapolation = flags & 2u;
+  header->uses_harmonic_extrapolation = flags & 2u;
 
   return std::expected<void, std::string_view>();
 }
 
 std::expected<void, std::string_view> ParseEta(std::istream& input,
                                                BsdfHeader* header) {
-  if (auto error = ParseFloat(input, &header->eta); !error) {
-    return error;
+  if (auto result = ParseFloat(input, &header->eta); !result) {
+    return result;
   }
 
   if (!std::isfinite(header->eta) || header->eta < 1.0f) {
@@ -97,12 +95,12 @@ std::expected<void, std::string_view> ParseEta(std::istream& input,
 
 std::expected<void, std::string_view> ParseAlpha(std::istream& input,
                                                  BsdfHeader* header) {
-  if (auto error = ParseFloat(input, &header->alpha[0]); !error) {
-    return error;
+  if (auto result = ParseFloat(input, &header->alpha[0]); !result) {
+    return result;
   }
 
-  if (auto error = ParseFloat(input, &header->alpha[1]); !error) {
-    return error;
+  if (auto result = ParseFloat(input, &header->alpha[1]); !result) {
+    return result;
   }
 
   if (!std::isfinite(header->alpha[0]) || header->alpha[0] <= 0.0f ||
@@ -115,8 +113,8 @@ std::expected<void, std::string_view> ParseAlpha(std::istream& input,
 
 std::expected<void, std::string_view> CheckReservedBytes(std::istream& input) {
   uint32_t reserved;
-  if (auto error = ParseUInt32(input, &reserved); !error) {
-    return std::unexpected(error.error());
+  if (auto result = ParseUInt32(input, &reserved); !result) {
+    return std::unexpected(result.error());
   }
 
   if (reserved != 0u) {
@@ -155,69 +153,69 @@ std::expected<BsdfHeader, std::string_view> ReadBsdfHeader(
     return std::unexpected("Bad stream passed");
   }
 
-  BsdfHeader result;
+  BsdfHeader header;
 
   if (!ParseMagicString(input)) {
     return std::unexpected("The input must start with the magic string");
   }
 
-  if (auto error = CheckVersion(input, &result); !error) {
-    return std::unexpected(error.error());
+  if (auto result = CheckVersion(input, &header); !result) {
+    return std::unexpected(result.error());
   }
 
-  if (auto error = ParseFlags(input, &result); !error) {
-    return std::unexpected(error.error());
+  if (auto result = ParseFlags(input, &header); !result) {
+    return std::unexpected(result.error());
   }
 
-  if (auto error = ParseUInt32(input, &result.num_nodes); !error) {
-    return std::unexpected(error.error());
+  if (auto result = ParseUInt32(input, &header.num_nodes); !result) {
+    return std::unexpected(result.error());
   }
 
-  if (auto error = ParseUInt32(input, &result.num_coefficients); !error) {
-    return std::unexpected(error.error());
+  if (auto result = ParseUInt32(input, &header.num_coefficients); !result) {
+    return std::unexpected(result.error());
   }
 
-  if (auto error = ParseUInt32(input, &result.num_max_order); !error) {
-    return std::unexpected(error.error());
+  if (auto result = ParseUInt32(input, &header.num_max_order); !result) {
+    return std::unexpected(result.error());
   }
 
-  if (auto error = ParseUInt32(input, &result.num_color_channels); !error) {
-    return std::unexpected(error.error());
+  if (auto result = ParseUInt32(input, &header.num_color_channels); !result) {
+    return std::unexpected(result.error());
   }
 
-  if (auto error = ParseUInt32(input, &result.num_basis_functions); !error) {
-    return std::unexpected(error.error());
+  if (auto result = ParseUInt32(input, &header.num_basis_functions); !result) {
+    return std::unexpected(result.error());
   }
 
-  if (auto error = ParseUInt32(input, &result.num_metadata_bytes); !error) {
-    return std::unexpected(error.error());
+  if (auto result = ParseUInt32(input, &header.num_metadata_bytes); !result) {
+    return std::unexpected(result.error());
   }
 
-  if (auto error = ParseUInt32(input, &result.num_parameters); !error) {
-    return std::unexpected(error.error());
+  if (auto result = ParseUInt32(input, &header.num_parameters); !result) {
+    return std::unexpected(result.error());
   }
 
-  if (auto error = ParseUInt32(input, &result.num_parameter_values); !error) {
-    return std::unexpected(error.error());
+  if (auto result = ParseUInt32(input, &header.num_parameter_values); !result) {
+    return std::unexpected(result.error());
   }
 
-  if (auto error = ParseEta(input, &result); !error) {
-    return std::unexpected(error.error());
+  if (auto result = ParseEta(input, &header); !result) {
+    return std::unexpected(result.error());
   }
 
-  if (auto error = ParseAlpha(input, &result); !error) {
-    return std::unexpected(error.error());
+  if (auto result = ParseAlpha(input, &header); !result) {
+    return std::unexpected(result.error());
   }
 
-  if (auto error = CheckReservedBytes(input); !error) {
-    return std::unexpected(error.error());
+  if (auto result = CheckReservedBytes(input); !result) {
+    return std::unexpected(result.error());
   }
 
-  if (auto error = CheckReservedBytes(input); !error) {
-    return std::unexpected(error.error());
+  if (auto result = CheckReservedBytes(input); !result) {
+    return std::unexpected(result.error());
   }
 
-  return result;
+  return header;
 }
 
 }  // namespace libfbsdf
