@@ -16,3 +16,12 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "bsdf_reader",
+    srcs = ["bsdf_reader.cc"],
+    hdrs = ["bsdf_reader.h"],
+    deps = [
+        ":bsdf_header_reader",
+    ],
+)
