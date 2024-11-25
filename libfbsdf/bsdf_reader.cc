@@ -171,17 +171,20 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
   }
 
   if (options->parse_offset_table) {
-    for (size_t i = 0; i < 2; i++) {
-      for (size_t j = 0; j < header->num_nodes; j++) {
-        for (size_t k = 0; j < header->num_nodes; k++) {
-          uint32_t value;
-          if (auto result = ParseUInt32(input, &value); !result) {
-            return std::unexpected(result.error());
-          }
+    for (size_t j = 0; j < header->num_nodes; j++) {
+      for (size_t k = 0; j < header->num_nodes; k++) {
+        uint32_t offset;
+        if (auto result = ParseUInt32(input, &offset); !result) {
+          return std::unexpected(result.error());
+        }
 
-          if (auto result = HandleOffset(value); !result) {
-            return result;
-          }
+        uint32_t length;
+        if (auto result = ParseUInt32(input, &length); !result) {
+          return std::unexpected(result.error());
+        }
+
+        if (auto result = HandleOffsetAndLength(offset, length); !result) {
+          return result;
         }
       }
     }

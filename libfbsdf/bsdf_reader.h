@@ -37,23 +37,38 @@ class BsdfReader {
       size_t metadata_size_bytes, float eta, float alpha_top,
       float alpha_bottom) = 0;
 
-  virtual std::expected<void, std::string> HandleNode(float value) = 0;
+  virtual std::expected<void, std::string> HandleNode(float value) {
+    return std::expected<void, std::string>();
+  }
 
-  virtual std::expected<void, std::string> HandleSampleCount(
-      uint32_t value) = 0;
+  virtual std::expected<void, std::string> HandleSampleCount(uint32_t value) {
+    return std::expected<void, std::string>();
+  }
 
-  virtual std::expected<void, std::string> HandleSamplePosition(
-      float value) = 0;
+  virtual std::expected<void, std::string> HandleSamplePosition(float value) {
+    return std::expected<void, std::string>();
+  }
 
-  virtual std::expected<void, std::string> HandleCdfMu(float value) = 0;
+  virtual std::expected<void, std::string> HandleCdfMu(float value) {
+    return std::expected<void, std::string>();
+  }
 
-  virtual std::expected<void, std::string> HandleOffset(uint32_t value) = 0;
+  virtual std::expected<void, std::string> HandleOffsetAndLength(
+      uint32_t offset, uint32_t length) {
+    return std::expected<void, std::string>();
+  }
 
-  virtual std::expected<void, std::string> HandleCoefficient(float value) = 0;
+  virtual std::expected<void, std::string> HandleCoefficient(float value) {
+    return std::expected<void, std::string>();
+  }
 
-  virtual std::expected<void, std::string> HandleMetadata(std::string data) = 0;
+  virtual std::expected<void, std::string> HandleMetadata(std::string data) {
+    return std::expected<void, std::string>();
+  }
 
-  virtual std::expected<void, std::string> Finish();
+  virtual std::expected<void, std::string> Finish() {
+    return std::expected<void, std::string>();
+  }
 };
 
 }  // namespace libfbsdf
