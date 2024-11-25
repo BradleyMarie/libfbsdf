@@ -34,7 +34,7 @@ class BsdfReader {
       const Flags& flags, size_t num_nodes, size_t num_basis_functions,
       size_t num_coefficients, size_t num_color_channels, size_t num_max_order,
       size_t num_parameters, size_t num_parameter_values,
-      size_t metadata_size_bytes, float eta, float alpha_top,
+      size_t metadata_size_bytes, float index_of_refraction, float alpha_top,
       float alpha_bottom) = 0;
 
   virtual std::expected<void, std::string> HandleNode(float value) {

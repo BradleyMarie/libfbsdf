@@ -88,11 +88,12 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
       .is_bsdf = header->is_bsdf,
       .uses_harmonic_extrapolation = header->uses_harmonic_extrapolation};
 
-  auto options = Start(flags, header->num_nodes, header->num_basis_functions,
-                       header->num_coefficients, header->num_color_channels,
-                       header->num_max_order, header->num_parameters,
-                       header->num_parameter_values, header->num_metadata_bytes,
-                       header->eta, header->alpha[0], header->alpha[1]);
+  auto options =
+      Start(flags, header->num_nodes, header->num_basis_functions,
+            header->num_coefficients, header->num_color_channels,
+            header->num_max_order, header->num_parameters,
+            header->num_parameter_values, header->num_metadata_bytes,
+            header->index_of_refraction, header->alpha[0], header->alpha[1]);
   if (options) {
     return std::unexpected(std::move(options.error()));
   }

@@ -14,7 +14,7 @@ std::expected<BsdfReader::Options, std::string> PbrtBsdfReader::Start(
     const Flags& flags, size_t num_nodes, size_t num_basis_functions,
     size_t num_coefficients, size_t num_color_channels, size_t num_max_order,
     size_t num_parameters, size_t num_parameter_values,
-    size_t metadata_size_bytes, float eta, float alpha_top,
+    size_t metadata_size_bytes, float index_of_refraction, float alpha_top,
     float alpha_bottom) {
   mu_ = std::make_shared<std::vector<float>>();
   cdf_ = std::make_shared<std::vector<float>>();
@@ -22,7 +22,7 @@ std::expected<BsdfReader::Options, std::string> PbrtBsdfReader::Start(
   aOffset_ = std::make_shared<std::vector<uint32_t>>();
   m_ = std::make_shared<std::vector<uint32_t>>();
   a0_ = std::make_shared<std::vector<float>>();
-  eta_ = eta;
+  index_of_refraction_ = index_of_refraction;
   mMax_ = num_max_order;
   nChannels_ = num_color_channels;
 

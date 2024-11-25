@@ -16,7 +16,7 @@ namespace libfbsdf {
 // for rendering in PBRT
 class PbrtBsdfReader final : public BsdfReader {
  public:
-  float Eta() const { return eta_; }
+  float IndexOfRefraction() const { return index_of_refraction_; }
 
   size_t MaxOrder() const { return mMax_; }
 
@@ -69,7 +69,7 @@ class PbrtBsdfReader final : public BsdfReader {
   std::shared_ptr<std::vector<float>> a0_ =
       std::make_shared<std::vector<float>>();
 
-  float eta_ = 1.0f;
+  float index_of_refraction_ = 1.0f;
   uint32_t mMax_ = 0u;
   uint32_t nChannels_ = 0u;
 };

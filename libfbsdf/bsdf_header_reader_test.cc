@@ -138,7 +138,7 @@ TEST(BsdfHeaderReader, Succeeds) {
   EXPECT_EQ(result.num_parameters, 0x04030201u);
   EXPECT_EQ(result.num_parameter_values, 0x04030201u);
   EXPECT_EQ(result.num_metadata_bytes, 0x04030201u);
-  EXPECT_EQ(result.eta, 1.0f);
+  EXPECT_EQ(result.index_of_refraction, 1.0f);
   EXPECT_EQ(result.alpha[0], 1.0f);
   EXPECT_EQ(result.alpha[1], 1.0f);
 }
@@ -184,29 +184,29 @@ TEST(BsdfHeaderReader, BadFlags) {
 
 TEST(BsdfHeaderReader, NegativeEta) {
   std::stringstream input(MakeHeader(-1.0f, 1.0f, 1.0f));
-  EXPECT_EQ("Invalid value for eta", ReadBsdfHeader(input).error());
+  EXPECT_EQ("Invalid index of refraction", ReadBsdfHeader(input).error());
 }
 
 TEST(BsdfHeaderReader, ZeroEta) {
   std::stringstream input(MakeHeader(0.0f, 1.0f, 1.0f));
-  EXPECT_EQ("Invalid value for eta", ReadBsdfHeader(input).error());
+  EXPECT_EQ("Invalid index of refraction", ReadBsdfHeader(input).error());
 }
 
 TEST(BsdfHeaderReader, LessThanOneEta) {
   std::stringstream input(MakeHeader(0.99f, 1.0f, 1.0f));
-  EXPECT_EQ("Invalid value for eta", ReadBsdfHeader(input).error());
+  EXPECT_EQ("Invalid index of refraction", ReadBsdfHeader(input).error());
 }
 
 TEST(BsdfHeaderReader, InfiniteEta) {
   std::stringstream input(
       MakeHeader(std::numeric_limits<float>::infinity(), 1.0f, 1.0f));
-  EXPECT_EQ("Invalid value for eta", ReadBsdfHeader(input).error());
+  EXPECT_EQ("Invalid index of refraction", ReadBsdfHeader(input).error());
 }
 
 TEST(BsdfHeaderReader, NaNEta) {
   std::stringstream input(
       MakeHeader(std::numeric_limits<float>::quiet_NaN(), 1.0f, 1.0f));
-  EXPECT_EQ("Invalid value for eta", ReadBsdfHeader(input).error());
+  EXPECT_EQ("Invalid index of refraction", ReadBsdfHeader(input).error());
 }
 
 TEST(BsdfHeaderReader, NegativeAlphaTop) {

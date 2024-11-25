@@ -80,14 +80,15 @@ std::expected<void, std::string_view> ParseFlags(std::istream& input,
   return std::expected<void, std::string_view>();
 }
 
-std::expected<void, std::string_view> ParseEta(std::istream& input,
-                                               BsdfHeader* header) {
-  if (auto result = ParseFloat(input, &header->eta); !result) {
+std::expected<void, std::string_view> ParseIndexOfRefraction(
+    std::istream& input, BsdfHeader* header) {
+  if (auto result = ParseFloat(input, &header->index_of_refraction); !result) {
     return result;
   }
 
-  if (!std::isfinite(header->eta) || header->eta < 1.0f) {
-    return std::unexpected("Invalid value for eta");
+  if (!std::isfinite(header->index_of_refraction) ||
+      header->index_of_refraction < 1.0f) {
+    return std::unexpected("Invalid index of refraction");
   }
 
   return std::expected<void, std::string_view>();
@@ -199,7 +200,7 @@ std::expected<BsdfHeader, std::string_view> ReadBsdfHeader(
     return std::unexpected(result.error());
   }
 
-  if (auto result = ParseEta(input, &header); !result) {
+  if (auto result = ParseIndexOfRefraction(input, &header); !result) {
     return std::unexpected(result.error());
   }
 

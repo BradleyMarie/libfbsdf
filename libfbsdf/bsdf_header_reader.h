@@ -42,8 +42,8 @@ struct BsdfHeader final {
   // The number of bytes of BSDF metadata in the input
   uint32_t num_metadata_bytes;
 
-  // The relative index of refraction through the material
-  float eta;
+  // The index of refraction of the material
+  float index_of_refraction;
 
   // The Beckmann-equivalent roughness for the top and bottom faces respectively
   float alpha[2];
