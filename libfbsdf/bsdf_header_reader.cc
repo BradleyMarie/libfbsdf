@@ -168,7 +168,8 @@ std::expected<BsdfHeader, std::string_view> ReadBsdfHeader(
     return std::unexpected(result.error());
   }
 
-  if (auto result = ParseUInt32(input, &header.num_nodes); !result) {
+  if (auto result = ParseUInt32(input, &header.num_elevational_samples);
+      !result) {
     return std::unexpected(result.error());
   }
 
@@ -176,7 +177,8 @@ std::expected<BsdfHeader, std::string_view> ReadBsdfHeader(
     return std::unexpected(result.error());
   }
 
-  if (auto result = ParseUInt32(input, &header.num_max_order); !result) {
+  if (auto result = ParseUInt32(input, &header.length_longest_series);
+      !result) {
     return std::unexpected(result.error());
   }
 

@@ -44,12 +44,13 @@ class PbrtBsdfReader final : public BsdfReader {
       size_t metadata_size_bytes, float eta, float alpha_top,
       float alpha_bottom) override;
 
-  std::expected<void, std::string> HandleNode(float value) override;
+  std::expected<void, std::string> HandleElevationalSample(
+      float value) override;
 
   std::expected<void, std::string> HandleCdfMu(float value) override;
 
-  std::expected<void, std::string> HandleOffsetAndLength(
-      uint32_t offset, uint32_t length) override;
+  std::expected<void, std::string> HandleSeries(uint32_t offset,
+                                                uint32_t length) override;
 
   std::expected<void, std::string> HandleCoefficient(float value) override;
 

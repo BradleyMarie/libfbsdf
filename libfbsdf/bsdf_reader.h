@@ -21,11 +21,11 @@ class BsdfReader {
   };
 
   struct Options {
-    bool parse_nodes = true;
+    bool parse_elevational_samples = true;
     bool parse_parameter_sample_counts = true;
     bool parse_parameter_values = true;
     bool parse_cdf_mu = true;
-    bool parse_offset_table = true;
+    bool parse_series = true;
     bool parse_coefficients = true;
     bool parse_metadata = true;
   };
@@ -37,7 +37,7 @@ class BsdfReader {
       size_t metadata_size_bytes, float index_of_refraction, float alpha_top,
       float alpha_bottom) = 0;
 
-  virtual std::expected<void, std::string> HandleNode(float value) {
+  virtual std::expected<void, std::string> HandleElevationalSample(float value) {
     return std::expected<void, std::string>();
   }
 
@@ -53,8 +53,8 @@ class BsdfReader {
     return std::expected<void, std::string>();
   }
 
-  virtual std::expected<void, std::string> HandleOffsetAndLength(
-      uint32_t offset, uint32_t length) {
+  virtual std::expected<void, std::string> HandleSeries(uint32_t offset,
+                                                        uint32_t length) {
     return std::expected<void, std::string>();
   }
 

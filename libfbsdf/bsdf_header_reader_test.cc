@@ -130,9 +130,9 @@ TEST(BsdfHeaderReader, Succeeds) {
   EXPECT_EQ(result.version, 1u);
   EXPECT_TRUE(result.is_bsdf);
   EXPECT_TRUE(result.uses_harmonic_extrapolation);
-  EXPECT_EQ(result.num_nodes, 0x04030201u);
+  EXPECT_EQ(result.num_elevational_samples, 0x04030201u);
   EXPECT_EQ(result.num_coefficients, 0x04030201u);
-  EXPECT_EQ(result.num_max_order, 0x04030201u);
+  EXPECT_EQ(result.length_longest_series, 0x04030201u);
   EXPECT_EQ(result.num_color_channels, 0x04030201u);
   EXPECT_EQ(result.num_basis_functions, 0x04030201u);
   EXPECT_EQ(result.num_parameters, 0x04030201u);

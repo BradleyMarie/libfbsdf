@@ -18,14 +18,14 @@ struct BsdfHeader final {
   // Indicates if the BSDF coefficients use harmonic extrapolation
   bool uses_harmonic_extrapolation;
 
-  // The number of samples in the elevational discretization
-  uint32_t num_nodes;
+  // The number of samples in one dimenstion of the elevational discretization
+  uint32_t num_elevational_samples;
 
   // The total number of Fourier series coefficients stored in the input
   uint32_t num_coefficients;
 
-  // The coefficient count for the longest series occurring in the input
-  uint32_t num_max_order;
+  // The length of the longest Fourier series occurring in the input
+  uint32_t length_longest_series;
 
   // The number of color channels
   uint32_t num_color_channels;

@@ -89,23 +89,23 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
       .uses_harmonic_extrapolation = header->uses_harmonic_extrapolation};
 
   auto options =
-      Start(flags, header->num_nodes, header->num_basis_functions,
+      Start(flags, header->num_elevational_samples, header->num_basis_functions,
             header->num_coefficients, header->num_color_channels,
-            header->num_max_order, header->num_parameters,
+            header->length_longest_series, header->num_parameters,
             header->num_parameter_values, header->num_metadata_bytes,
             header->index_of_refraction, header->alpha[0], header->alpha[1]);
   if (options) {
     return std::unexpected(std::move(options.error()));
   }
 
-  if (options->parse_nodes) {
-    for (uint32_t i = 0; i < header->num_nodes; i++) {
+  if (options->parse_elevational_samples) {
+    for (uint32_t i = 0; i < header->num_elevational_samples; i++) {
       float value;
       if (auto result = ParseFloat(input, &value); !result) {
         return std::unexpected(result.error());
       }
 
-      if (auto result = HandleNode(value); !result) {
+      if (auto result = HandleElevationalSample(value); !result) {
         return result;
       }
     }
@@ -151,8 +151,8 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
 
   if (options->parse_cdf_mu) {
     for (size_t i = 0; i < header->num_basis_functions; i++) {
-      for (size_t j = 0; j < header->num_nodes; j++) {
-        for (size_t k = 0; j < header->num_nodes; k++) {
+      for (size_t j = 0; j < header->num_elevational_samples; j++) {
+        for (size_t k = 0; j < header->num_elevational_samples; k++) {
           float value;
           if (auto result = ParseFloat(input, &value); !result) {
             return std::unexpected(result.error());
@@ -164,16 +164,17 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
         }
       }
     }
-  } else if (auto result = SkipElements(input, header->num_basis_functions,
-                                        header->num_nodes, header->num_nodes,
-                                        sizeof(float));
+  } else if (auto result =
+                 SkipElements(input, header->num_basis_functions,
+                              header->num_elevational_samples,
+                              header->num_elevational_samples, sizeof(float));
              !result) {
     return std::unexpected(result.error());
   }
 
-  if (options->parse_offset_table) {
-    for (size_t j = 0; j < header->num_nodes; j++) {
-      for (size_t k = 0; j < header->num_nodes; k++) {
+  if (options->parse_series) {
+    for (size_t j = 0; j < header->num_elevational_samples; j++) {
+      for (size_t k = 0; j < header->num_elevational_samples; k++) {
         uint32_t offset;
         if (auto result = ParseUInt32(input, &offset); !result) {
           return std::unexpected(result.error());
@@ -184,13 +185,14 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
           return std::unexpected(result.error());
         }
 
-        if (auto result = HandleOffsetAndLength(offset, length); !result) {
+        if (auto result = HandleSeries(offset, length); !result) {
           return result;
         }
       }
     }
-  } else if (auto result = SkipElements(input, 2, header->num_nodes,
-                                        header->num_nodes, sizeof(float));
+  } else if (auto result =
+                 SkipElements(input, 2, header->num_elevational_samples,
+                              header->num_elevational_samples, sizeof(float));
              !result) {
     return std::unexpected(result.error());
   }

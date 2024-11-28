@@ -27,17 +27,18 @@ std::expected<BsdfReader::Options, std::string> PbrtBsdfReader::Start(
   nChannels_ = num_color_channels;
 
   return BsdfReader::Options{
-      .parse_nodes = true,
+      .parse_elevational_samples = true,
       .parse_parameter_sample_counts = false,
       .parse_parameter_values = false,
       .parse_cdf_mu = true,
-      .parse_offset_table = true,
+      .parse_series = true,
       .parse_coefficients = true,
       .parse_metadata = false,
   };
 }
 
-std::expected<void, std::string> PbrtBsdfReader::HandleNode(float value) {
+std::expected<void, std::string> PbrtBsdfReader::HandleElevationalSample(
+    float value) {
   mu_->push_back(value);
   return std::expected<void, std::string>();
 }
@@ -47,8 +48,8 @@ std::expected<void, std::string> PbrtBsdfReader::HandleCdfMu(float value) {
   return std::expected<void, std::string>();
 }
 
-std::expected<void, std::string> PbrtBsdfReader::HandleOffsetAndLength(
-    uint32_t offset, uint32_t length) {
+std::expected<void, std::string> PbrtBsdfReader::HandleSeries(uint32_t offset,
+                                                              uint32_t length) {
   aOffset_->push_back(offset);
   m_->push_back(length);
   return std::expected<void, std::string>();
