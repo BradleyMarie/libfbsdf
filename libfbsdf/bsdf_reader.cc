@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <expected>
 #include <istream>
+#include <limits>
 
 #include "libfbsdf/bsdf_header_reader.h"
 
@@ -158,7 +159,7 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
             return std::unexpected(result.error());
           }
 
-          if (auto result = HandleCdfMu(value); !result) {
+          if (auto result = HandleCdf(value); !result) {
             return result;
           }
         }
