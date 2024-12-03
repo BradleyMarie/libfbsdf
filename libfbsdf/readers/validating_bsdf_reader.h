@@ -20,7 +20,8 @@ class ValidatingBsdfReader : public BsdfReader {
   virtual std::expected<Options, std::string> Start(
       const Flags& flags, uint32_t num_basis_functions,
       size_t num_color_channels, size_t longest_series_length,
-      float index_of_refraction, float alpha_top, float alpha_bottom) = 0;
+      float index_of_refraction, float roughness_top,
+      float roughness_bottom) = 0;
 
   // Provides an ordered list of the the elevational samples in one dimension.
   //
@@ -86,8 +87,8 @@ class ValidatingBsdfReader : public BsdfReader {
       const Flags& flags, size_t num_nodes, size_t num_basis_functions,
       size_t num_coefficients, size_t num_color_channels, size_t num_max_order,
       size_t num_parameters, size_t num_parameter_values,
-      size_t metadata_size_bytes, float index_of_refraction, float alpha_top,
-      float alpha_bottom) override final;
+      size_t metadata_size_bytes, float index_of_refraction,
+      float roughness_top, float roughness_bottom) override final;
 
   std::expected<void, std::string> HandleElevationalSample(
       float value) override final;

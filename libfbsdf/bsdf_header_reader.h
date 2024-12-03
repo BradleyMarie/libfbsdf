@@ -46,7 +46,7 @@ struct BsdfHeader final {
   float index_of_refraction;
 
   // The Beckmann-equivalent roughness for the top and bottom faces respectively
-  float alpha[2];
+  float roughness[2];
 };
 
 // NOTE: Behavior is undefined if input is not a binary stream

@@ -10,18 +10,20 @@
 namespace libfbsdf {
 
 std::expected<BsdfReader::Options, std::string> ValidatingBsdfReader::Start(
-    const BsdfReader::Flags& flags, size_t num_nodes,
+    const BsdfReader::Flags& flags, size_t num_elevational_samples,
     size_t num_basis_functions, size_t num_coefficients,
     size_t num_color_channels, size_t longest_series_length,
     size_t num_parameters, size_t num_parameter_values,
-    size_t metadata_size_bytes, float index_of_refraction, float alpha_top,
-    float alpha_bottom) {
-  if (num_nodes > std::numeric_limits<size_t>::max() / num_nodes) {
+    size_t metadata_size_bytes, float index_of_refraction, float roughness_top,
+    float roughness_bottom) {
+  if (num_elevational_samples >
+      std::numeric_limits<size_t>::max() / num_elevational_samples) {
     return std::unexpected("Input is too large to fit into memory");
   }
 
-  num_elevational_samples_1d_ = num_nodes;
-  num_elevational_samples_2d_ = num_nodes * num_nodes;
+  num_elevational_samples_1d_ = num_elevational_samples;
+  num_elevational_samples_2d_ =
+      num_elevational_samples * num_elevational_samples;
   length_longest_series_ = longest_series_length;
   num_basis_functions_ = num_basis_functions;
   num_coefficients_ = num_coefficients;
@@ -29,8 +31,8 @@ std::expected<BsdfReader::Options, std::string> ValidatingBsdfReader::Start(
   num_parameter_values_ = num_parameter_values;
 
   return Start(flags, num_basis_functions, num_color_channels,
-               longest_series_length, index_of_refraction, alpha_top,
-               alpha_bottom);
+               longest_series_length, index_of_refraction, roughness_top,
+               roughness_bottom);
 }
 
 std::expected<void, std::string> ValidatingBsdfReader::HandleElevationalSample(

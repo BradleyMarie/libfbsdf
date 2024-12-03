@@ -94,19 +94,19 @@ std::expected<void, std::string_view> ParseIndexOfRefraction(
   return std::expected<void, std::string_view>();
 }
 
-std::expected<void, std::string_view> ParseAlpha(std::istream& input,
-                                                 BsdfHeader* header) {
-  if (auto result = ParseFloat(input, &header->alpha[0]); !result) {
+std::expected<void, std::string_view> ParseRoughness(std::istream& input,
+                                                     BsdfHeader* header) {
+  if (auto result = ParseFloat(input, &header->roughness[0]); !result) {
     return result;
   }
 
-  if (auto result = ParseFloat(input, &header->alpha[1]); !result) {
+  if (auto result = ParseFloat(input, &header->roughness[1]); !result) {
     return result;
   }
 
-  if (!std::isfinite(header->alpha[0]) || header->alpha[0] <= 0.0f ||
-      !std::isfinite(header->alpha[1]) || header->alpha[1] <= 0.0f) {
-    return std::unexpected("Invalid value for alpha");
+  if (!std::isfinite(header->roughness[0]) || header->roughness[0] <= 0.0f ||
+      !std::isfinite(header->roughness[1]) || header->roughness[1] <= 0.0f) {
+    return std::unexpected("Invalid value for roughness");
   }
 
   return std::expected<void, std::string_view>();
@@ -206,7 +206,7 @@ std::expected<BsdfHeader, std::string_view> ReadBsdfHeader(
     return std::unexpected(result.error());
   }
 
-  if (auto result = ParseAlpha(input, &header); !result) {
+  if (auto result = ParseRoughness(input, &header); !result) {
     return std::unexpected(result.error());
   }
 
