@@ -1,5 +1,6 @@
 #include "libfbsdf/bsdf_header_reader.h"
 
+#include <bit>
 #include <cmath>
 #include <cstdint>
 #include <expected>
