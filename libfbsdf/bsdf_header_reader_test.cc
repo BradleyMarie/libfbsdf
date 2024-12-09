@@ -214,11 +214,6 @@ TEST(BsdfHeaderReader, NegativeAlphaTop) {
   EXPECT_EQ("Invalid value for roughness", ReadBsdfHeader(input).error());
 }
 
-TEST(BsdfHeaderReader, ZeroAlphaTop) {
-  std::stringstream input(MakeHeader(1.0f, 0.0f, 1.0f));
-  EXPECT_EQ("Invalid value for roughness", ReadBsdfHeader(input).error());
-}
-
 TEST(BsdfHeaderReader, InfiniteAlphaTop) {
   std::stringstream input(
       MakeHeader(1.0f, std::numeric_limits<float>::infinity(), 1.0f));
@@ -233,11 +228,6 @@ TEST(BsdfHeaderReader, NaNAlphaTop) {
 
 TEST(BsdfHeaderReader, NegativeAlphaBottom) {
   std::stringstream input(MakeHeader(1.0f, 1.0, -1.0f));
-  EXPECT_EQ("Invalid value for roughness", ReadBsdfHeader(input).error());
-}
-
-TEST(BsdfHeaderReader, ZeroAlphaBottom) {
-  std::stringstream input(MakeHeader(1.0f, 1.0, 0.0f));
   EXPECT_EQ("Invalid value for roughness", ReadBsdfHeader(input).error());
 }
 

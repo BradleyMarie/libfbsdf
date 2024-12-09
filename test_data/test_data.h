@@ -1,6 +1,7 @@
 #ifndef _TEST_DATA_TEST_DATA_
 #define _TEST_DATA_TEST_DATA_
 
+#include <filesystem>
 #include <istream>
 #include <map>
 #include <memory>
@@ -12,7 +13,20 @@ namespace libfbsdf {
 namespace testing {
 
 struct FileParams {
-  std::string path;
+  std::filesystem::path path;
+  bool is_bsdf;
+  bool uses_harmonic_extrapolation;
+  uint32_t num_elevational_samples;
+  uint32_t num_basis_functions;
+  uint32_t num_coefficients;
+  uint32_t num_color_channels;
+  uint32_t longest_series_length;
+  uint32_t num_parameters;
+  uint32_t num_parameter_values;
+  uint32_t metadata_size_bytes;
+  float index_of_refraction;
+  float roughness_top;
+  float roughness_bottom;
 };
 
 // A map from the name of a test data file to its parameters

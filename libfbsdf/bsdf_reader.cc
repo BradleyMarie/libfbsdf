@@ -6,6 +6,7 @@
 #include <expected>
 #include <istream>
 #include <limits>
+#include <utility>
 
 #include "libfbsdf/bsdf_header_reader.h"
 
@@ -49,12 +50,23 @@ std::expected<void, const char*> ParseFloat(std::istream& input, float* value) {
 }
 
 std::expected<void, const char*> SkipElements(std::istream& input,
-                                              size_t num_elements,
+                                              size_t dimension_0,
                                               size_t element_size) {
   for (size_t i = 0; i < element_size; i++) {
-    if (!input.ignore(num_elements)) {
+    if (!input.ignore(dimension_0)) {
       return std::unexpected(UnexpectedEOF());
     }
+  }
+
+  return std::expected<void, const char*>();
+}
+
+std::expected<void, const char*> SkipElements(std::istream& input,
+                                              size_t dimension_0,
+                                              size_t dimension_1,
+                                              size_t element_size) {
+  for (size_t i = 0; i < element_size; i++) {
+    SkipElements(input, dimension_0, dimension_1);
   }
 
   return std::expected<void, const char*>();
@@ -66,13 +78,7 @@ std::expected<void, const char*> SkipElements(std::istream& input,
                                               size_t dimension_2,
                                               size_t element_size) {
   for (size_t i = 0; i < element_size; i++) {
-    for (size_t j = 0; j < dimension_0; j++) {
-      for (size_t k = 0; k < dimension_1; k++) {
-        if (!input.ignore(dimension_2)) {
-          return std::unexpected(UnexpectedEOF());
-        }
-      }
-    }
+    SkipElements(input, dimension_0, dimension_1, dimension_2);
   }
 
   return std::expected<void, const char*>();
@@ -96,8 +102,8 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
       header->length_longest_series, header->num_parameters,
       header->num_parameter_values, header->num_metadata_bytes,
       header->index_of_refraction, header->roughness[0], header->roughness[1]);
-  if (options) {
-    return std::unexpected(std::move(options.error()));
+  if (!options) {
+    return std::unexpected(options.error());
   }
 
   if (options->parse_elevational_samples) {
@@ -111,8 +117,8 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
         return result;
       }
     }
-  } else if (auto result =
-                 SkipElements(input, header->num_parameters, sizeof(float));
+  } else if (auto result = SkipElements(input, header->num_elevational_samples,
+                                        sizeof(float));
              !result) {
     return std::unexpected(result.error());
   }
@@ -154,7 +160,7 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
   if (options->parse_cdf_mu) {
     for (size_t i = 0; i < header->num_basis_functions; i++) {
       for (size_t j = 0; j < header->num_elevational_samples; j++) {
-        for (size_t k = 0; j < header->num_elevational_samples; k++) {
+        for (size_t k = 0; k < header->num_elevational_samples; k++) {
           float value;
           if (auto result = ParseFloat(input, &value); !result) {
             return std::unexpected(result.error());
@@ -175,8 +181,8 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
   }
 
   if (options->parse_series) {
-    for (size_t j = 0; j < header->num_elevational_samples; j++) {
-      for (size_t k = 0; j < header->num_elevational_samples; k++) {
+    for (size_t i = 0; i < header->num_elevational_samples; i++) {
+      for (size_t j = 0; j < header->num_elevational_samples; j++) {
         uint32_t offset;
         if (auto result = ParseUInt32(input, &offset); !result) {
           return std::unexpected(result.error());
@@ -192,9 +198,9 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
         }
       }
     }
-  } else if (auto result =
-                 SkipElements(input, 2, header->num_elevational_samples,
-                              header->num_elevational_samples, sizeof(float));
+  } else if (auto result = SkipElements(input, header->num_elevational_samples,
+                                        header->num_elevational_samples,
+                                        2 * sizeof(float));
              !result) {
     return std::unexpected(result.error());
   }
@@ -216,10 +222,14 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
     return std::unexpected(result.error());
   }
 
-  if (options->parse_metadata) {
+  if (options->parse_metadata && header->num_metadata_bytes != 0) {
     std::string metadata('\0', header->num_metadata_bytes);
     if (!input.read(metadata.data(), metadata.size())) {
       return std::unexpected(UnexpectedEOF());
+    }
+
+    if (auto result = HandleMetadata(std::move(metadata)); !result) {
+      return result;
     }
   } else if (!input.ignore(header->num_metadata_bytes)) {
     return std::unexpected(UnexpectedEOF());

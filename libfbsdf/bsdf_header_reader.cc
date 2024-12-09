@@ -105,8 +105,8 @@ std::expected<void, std::string_view> ParseRoughness(std::istream& input,
     return result;
   }
 
-  if (!std::isfinite(header->roughness[0]) || header->roughness[0] <= 0.0f ||
-      !std::isfinite(header->roughness[1]) || header->roughness[1] <= 0.0f) {
+  if (!std::isfinite(header->roughness[0]) || header->roughness[0] < 0.0f ||
+      !std::isfinite(header->roughness[1]) || header->roughness[1] < 0.0f) {
     return std::unexpected("Invalid value for roughness");
   }
 
