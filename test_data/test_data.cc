@@ -52,11 +52,16 @@ std::string DecompressBytes(const std::vector<char>& compressed_bytes) {
   }
 
   std::string output;
-  for (status = inflate(&stream, Z_SYNC_FLUSH); status == Z_OK;
-       status = inflate(&stream, Z_SYNC_FLUSH)) {
+  for (;;) {
+    status = inflate(&stream, Z_SYNC_FLUSH);
+
     for (char* c = decompressed.get();
          c != reinterpret_cast<char*>(stream.next_out); c++) {
       output += *c;
+    }
+
+    if (status != Z_OK) {
+      break;
     }
 
     stream.avail_out = kChunkSize;
