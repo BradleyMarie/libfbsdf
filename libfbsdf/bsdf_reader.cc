@@ -53,7 +53,7 @@ std::expected<void, const char*> SkipElements(std::istream& input,
                                               size_t dimension_0,
                                               size_t element_size) {
   for (size_t i = 0; i < element_size; i++) {
-    if (!input.ignore(dimension_0)) {
+    if (!input.seekg(dimension_0, std::ios_base::cur)) {
       return std::unexpected(UnexpectedEOF());
     }
   }
@@ -223,15 +223,15 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
   }
 
   if (options->parse_metadata && header->num_metadata_bytes != 0) {
-    std::string metadata('\0', header->num_metadata_bytes);
-    if (!input.read(metadata.data(), metadata.size())) {
+    std::string metadata(header->num_metadata_bytes, '\0');
+    if (!input.read(metadata.data(), header->num_metadata_bytes)) {
       return std::unexpected(UnexpectedEOF());
     }
 
     if (auto result = HandleMetadata(std::move(metadata)); !result) {
       return result;
     }
-  } else if (!input.ignore(header->num_metadata_bytes)) {
+  } else if (!input.seekg(header->num_metadata_bytes, std::ios_base::cur)) {
     return std::unexpected(UnexpectedEOF());
   }
 

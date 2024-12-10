@@ -31,7 +31,15 @@ cc_test(
     srcs = ["bsdf_reader_test.cc"],
     deps = [
         ":bsdf_header_reader",
+        ":test_bsdf_writer",
         "//test_data",
         "@googletest//:gtest_main",
     ],
+)
+
+cc_library(
+    name = "test_bsdf_writer",
+    testonly = 1,
+    srcs = ["test_bsdf_writer.cc"],
+    hdrs = ["test_bsdf_writer.h"],
 )
