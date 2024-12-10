@@ -10,3 +10,14 @@ cc_library(
         "//libfbsdf:bsdf_reader",
     ],
 )
+
+cc_test(
+    name = "validating_bsdf_reader_test",
+    srcs = ["validating_bsdf_reader_test.cc"],
+    deps = [
+        ":validating_bsdf_reader",
+        "//libfbsdf:test_bsdf_writer",
+        "//test_data",
+        "@googletest//:gtest_main",
+    ],
+)

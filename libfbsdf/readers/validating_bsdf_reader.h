@@ -11,9 +11,14 @@
 
 namespace libfbsdf {
 
-// A BSDF reader that performs
+// A BSDF reader that does extensive validation of the input in an effort of
+// catching errors before they can manifest as difficult to debug visual
+// artifacts. The exact validation performed by this reader is not explicltly
+// defined and may grow or shrink in the future.
 class ValidatingBsdfReader : public BsdfReader {
  protected:
+  ValidatingBsdfReader(bool clamp_cdf = true) : clamp_cdf_(clamp_cdf) {}
+
   // Called at the start of parsing an input and passes information parsed from
   // the header of the BSDF file. Returns the parts of the file that should
   // be parsed or an error if the file cannot be read by the reader.
@@ -79,6 +84,8 @@ class ValidatingBsdfReader : public BsdfReader {
   uint32_t num_coefficients_ = 0u;
   uint32_t num_parameters_ = 0u;
   uint32_t num_parameter_values_ = 0u;
+  bool zero_duplicate_already_allowed_ = false;
+  bool clamp_cdf_ = false;
 
  protected:
   // This class implements the entire BsdfReader interface with the exception of

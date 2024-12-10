@@ -1,13 +1,45 @@
 #include "libfbsdf/readers/validating_bsdf_reader.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <expected>
+#include <iostream>
 #include <limits>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace libfbsdf {
+namespace {
+
+std::expected<void, std::string> ValidateElevationalSamples(
+    const std::vector<float> samples, float value,
+    bool& zero_duplicate_already_allowed) {
+  if (value < -1.0f || value > 1.0f) {
+    return std::unexpected(
+        "Input contained elevational samples that were out of range");
+  }
+
+  if (samples.empty()) {
+    return std::expected<void, std::string>();
+  }
+
+  if (samples.back() < value) {
+    return std::expected<void, std::string>();
+  }
+
+  // A single duplicate value is allowed at the origin
+  if (samples.back() == value && value == 0.0f &&
+      !zero_duplicate_already_allowed) {
+    zero_duplicate_already_allowed = true;
+    return std::expected<void, std::string>();
+  }
+
+  return std::unexpected(
+      "Input contained improperly ordered elevational samples");
+}
+
+}  // namespace
 
 std::expected<BsdfReader::Options, std::string> ValidatingBsdfReader::Start(
     const BsdfReader::Flags& flags, size_t num_elevational_samples,
@@ -16,8 +48,9 @@ std::expected<BsdfReader::Options, std::string> ValidatingBsdfReader::Start(
     size_t num_parameters, size_t num_parameter_values,
     size_t metadata_size_bytes, float index_of_refraction, float roughness_top,
     float roughness_bottom) {
-  if (num_elevational_samples >
-      std::numeric_limits<size_t>::max() / num_elevational_samples) {
+  if (num_elevational_samples != 0 &&
+      num_elevational_samples >
+          std::numeric_limits<size_t>::max() / num_elevational_samples) {
     return std::unexpected("Input is too large to fit into memory");
   }
 
@@ -29,6 +62,7 @@ std::expected<BsdfReader::Options, std::string> ValidatingBsdfReader::Start(
   num_coefficients_ = num_coefficients;
   num_parameters_ = num_parameters;
   num_parameter_values_ = num_parameter_values;
+  zero_duplicate_already_allowed_ = false;
 
   return Start(flags, num_basis_functions, num_color_channels,
                longest_series_length, index_of_refraction, roughness_top,
@@ -37,9 +71,10 @@ std::expected<BsdfReader::Options, std::string> ValidatingBsdfReader::Start(
 
 std::expected<void, std::string> ValidatingBsdfReader::HandleElevationalSample(
     float value) {
-  if (!elevational_samples_.empty() && elevational_samples_.back() >= value) {
-    return std::unexpected(
-        "Input contained improperly ordered elevational samples");
+  if (auto valid = ValidateElevationalSamples(elevational_samples_, value,
+                                              zero_duplicate_already_allowed_);
+      !valid) {
+    return valid;
   }
 
   elevational_samples_.reserve(num_elevational_samples_1d_);
@@ -54,8 +89,10 @@ std::expected<void, std::string> ValidatingBsdfReader::HandleElevationalSample(
 }
 
 std::expected<void, std::string> ValidatingBsdfReader::HandleCdf(float value) {
-  if (value < 0.0f) {
-    return std::unexpected("Input contained an invalid CDF value");
+  if (clamp_cdf_) {
+    value = std::clamp(value, 0.0f, 1.0f);
+  } else if (value < 0.0f || value > 1.0f) {
+    return std::unexpected("Input contained a CDF value that was out of range");
   }
 
   cdf_.reserve(num_elevational_samples_2d_);
@@ -71,7 +108,7 @@ std::expected<void, std::string> ValidatingBsdfReader::HandleCdf(float value) {
 
 std::expected<void, std::string> ValidatingBsdfReader::HandleSeries(
     uint32_t offset, uint32_t length) {
-  if (offset >= coefficients_.size()) {
+  if (length != 0u && offset >= num_coefficients_) {
     return std::unexpected("Input contained an offset that was out of bounds");
   }
 
@@ -81,7 +118,8 @@ std::expected<void, std::string> ValidatingBsdfReader::HandleSeries(
         "defined in the input");
   }
 
-  if (coefficients_.size() < length || coefficients_.size() - length < offset) {
+  if (num_coefficients_ < length ||
+      (length != 0u && num_coefficients_ - length < offset)) {
     return std::unexpected(
         "Input contained a series that extended out of bounds");
   }
