@@ -15,7 +15,7 @@ namespace {
 
 std::expected<void, std::string> ValidateElevationalSamples(
     const std::vector<float> samples, float value,
-    bool& zero_duplicate_already_allowed) {
+    bool allow_duplicates_at_origin, bool& zero_duplicate_already_allowed) {
   if (value < -1.0f || value > 1.0f) {
     return std::unexpected(
         "Input contained elevational samples that were out of range");
@@ -30,7 +30,7 @@ std::expected<void, std::string> ValidateElevationalSamples(
   }
 
   // A single duplicate value is allowed at the origin
-  if (samples.back() == value && value == 0.0f &&
+  if (allow_duplicates_at_origin && samples.back() == value && value == 0.0f &&
       !zero_duplicate_already_allowed) {
     zero_duplicate_already_allowed = true;
     return std::expected<void, std::string>();
@@ -73,6 +73,7 @@ std::expected<BsdfReader::Options, std::string> ValidatingBsdfReader::Start(
 std::expected<void, std::string> ValidatingBsdfReader::HandleElevationalSample(
     float value) {
   if (auto valid = ValidateElevationalSamples(elevational_samples_, value,
+                                              allow_duplicates_at_origin_,
                                               zero_duplicate_already_allowed_);
       !valid) {
     return valid;

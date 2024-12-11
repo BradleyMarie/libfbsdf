@@ -18,7 +18,10 @@ namespace libfbsdf {
 // defined and may grow or shrink in the future.
 class ValidatingBsdfReader : public BsdfReader {
  protected:
-  ValidatingBsdfReader(bool clamp_cdf = true) : clamp_cdf_(clamp_cdf) {}
+  ValidatingBsdfReader(bool clamp_cdf = true,
+                       bool allow_duplicates_at_origin = true)
+      : clamp_cdf_(clamp_cdf),
+        allow_duplicates_at_origin_(allow_duplicates_at_origin) {}
 
   // Called at the start of parsing an input and passes information parsed from
   // the header of the BSDF file. Returns the parts of the file that should
@@ -86,7 +89,10 @@ class ValidatingBsdfReader : public BsdfReader {
   uint32_t num_parameters_ = 0u;
   uint32_t num_parameter_values_ = 0u;
   bool zero_duplicate_already_allowed_ = false;
+
+  // Validation relaxations
   bool clamp_cdf_ = false;
+  bool allow_duplicates_at_origin_ = false;
 
  protected:
   // This class implements the entire BsdfReader interface with the exception of
