@@ -1,7 +1,8 @@
 #include "libfbsdf/readers/validating_bsdf_reader.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <expected>
-#include <iostream>
 #include <sstream>
 #include <string>
 
@@ -22,9 +23,9 @@ using ::libfbsdf::testing::MakeEmptyBsdfFile;
 using ::libfbsdf::testing::MakeMinimalBsdfFile;
 using ::libfbsdf::testing::OpenTestData;
 using ::testing::_;
-using ::testing::AtMost;
 using ::testing::ElementsAre;
 using ::testing::Return;
+using ::testing::SizeIs;
 
 class StartFailsValidatingBsdfReader : public ValidatingBsdfReader {
  public:
@@ -103,14 +104,48 @@ TEST(ValidatingBsdfReader, BadlyOrderedElevationalSamples) {
 
 TEST(ValidatingBsdfReader, TestDataLoads) {
   for (const auto& [file_name, file_params] : kTestDataFiles) {
-    std::cout << file_name << std::endl;
     MockValidatingBsdfReader mock_reader;
-    EXPECT_CALL(mock_reader, HandleElevationalSamples(_)).Times(AtMost(1));
-    EXPECT_CALL(mock_reader, HandleParameterSampleCounts(_)).Times(AtMost(1));
-    EXPECT_CALL(mock_reader, HandleParameterSamples(_)).Times(AtMost(1));
-    EXPECT_CALL(mock_reader, HandleCdf(_)).Times(AtMost(1));
-    EXPECT_CALL(mock_reader, HandleSeries(_)).Times(AtMost(1));
-    EXPECT_CALL(mock_reader, HandleCoefficients(_)).Times(AtMost(1));
+
+    if (file_params.num_elevational_samples != 0) {
+      EXPECT_CALL(mock_reader, HandleElevationalSamples(
+                                   SizeIs(file_params.num_elevational_samples)))
+          .Times(1);
+    }
+
+    if (file_params.num_parameters != 0) {
+      EXPECT_CALL(mock_reader, HandleParameterSampleCounts(
+                                   SizeIs(file_params.num_parameters)))
+          .Times(1);
+    }
+
+    if (file_params.num_parameter_values != 0) {
+      EXPECT_CALL(mock_reader, HandleParameterSamples(
+                                   SizeIs(file_params.num_parameter_values)))
+          .Times(1);
+    }
+
+    if (file_params.num_elevational_samples != 0 &&
+        file_params.num_basis_functions != 0) {
+      EXPECT_CALL(mock_reader,
+                  HandleCdf(SizeIs(file_params.num_elevational_samples *
+                                   file_params.num_elevational_samples *
+                                   file_params.num_basis_functions)))
+          .Times(1);
+    }
+
+    if (file_params.num_elevational_samples != 0) {
+      EXPECT_CALL(mock_reader,
+                  HandleSeries(SizeIs(file_params.num_elevational_samples *
+                                      file_params.num_elevational_samples)))
+          .Times(1);
+    }
+
+    if (file_params.num_coefficients != 0) {
+      EXPECT_CALL(mock_reader,
+                  HandleCoefficients(SizeIs(file_params.num_coefficients)))
+          .Times(1);
+    }
+
     EXPECT_TRUE(mock_reader.ReadFrom(*OpenTestData(file_name)));
   }
 }
