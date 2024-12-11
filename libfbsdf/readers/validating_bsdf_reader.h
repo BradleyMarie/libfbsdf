@@ -1,6 +1,7 @@
 #ifndef _LIBFBSDF_READERS_VALIDATING_BSDF_READER_
 #define _LIBFBSDF_READERS_VALIDATING_BSDF_READER_
 
+#include <cstddef>
 #include <cstdint>
 #include <expected>
 #include <string>

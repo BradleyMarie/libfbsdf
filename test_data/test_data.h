@@ -1,6 +1,7 @@
 #ifndef _TEST_DATA_TEST_DATA_
 #define _TEST_DATA_TEST_DATA_
 
+#include <cstdint>
 #include <filesystem>
 #include <istream>
 #include <map>

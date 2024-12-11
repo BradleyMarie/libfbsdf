@@ -1,6 +1,8 @@
 #include "libfbsdf/bsdf_reader.h"
 
 #include <array>
+#include <cstddef>
+#include <cstdint>
 #include <expected>
 #include <istream>
 #include <memory>

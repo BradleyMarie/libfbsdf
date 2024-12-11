@@ -1,6 +1,7 @@
 #ifndef _LIBFBSDF_BSDF_HEADER_READER_
 #define _LIBFBSDF_BSDF_HEADER_READER_
 
+#include <cstddef>
 #include <cstdint>
 #include <expected>
 #include <istream>

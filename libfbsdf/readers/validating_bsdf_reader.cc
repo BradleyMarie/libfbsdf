@@ -1,6 +1,7 @@
 #include "libfbsdf/readers/validating_bsdf_reader.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <expected>
 #include <iostream>

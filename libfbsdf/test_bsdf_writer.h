@@ -1,6 +1,7 @@
 #ifndef _LIBFBSDF_TEST_BSDF_WRITER_
 #define _LIBFBSDF_TEST_BSDF_WRITER_
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>

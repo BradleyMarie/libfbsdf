@@ -1,5 +1,7 @@
 #include "test_data/test_data.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <exception>
 #include <filesystem>
 #include <fstream>
