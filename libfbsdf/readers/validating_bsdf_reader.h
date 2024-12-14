@@ -21,7 +21,7 @@ class ValidatingBsdfReader : public BsdfReader {
   // Controls validation rules applied during parsing.
   struct ValidationOptions {
     // If true, the longest series length set in the header is not validated
-    // against the length of series set in the file. By default, this
+    // against the length of series set in the input. By default, this
     // validation will not be performed since the longest series length is
     // not exposed directly by the ValidatingBsdfReader API.
     bool ignore_longest_series_length = true;
@@ -47,8 +47,8 @@ class ValidatingBsdfReader : public BsdfReader {
       : options_(options) {}
 
   // Called at the start of parsing an input and passes information parsed from
-  // the header of the BSDF file. Returns the parts of the file that should
-  // be parsed or an error if the file cannot be read by the reader.
+  // the header of the input. Returns the parts of the input that should
+  // be parsed or an error if the input cannot be read by the reader.
   virtual std::expected<Options, std::string> Start(
       const Flags& flags, uint32_t num_basis_functions,
       size_t num_color_channels, float index_of_refraction, float roughness_top,
