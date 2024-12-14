@@ -458,7 +458,7 @@ TEST(BsdfReader, ParsesMinimalBsdf) {
     }
 
     if (parsed_parameters[3]) {
-      EXPECT_CALL(test_reader, HandleCdf(1.0f))
+      EXPECT_CALL(test_reader, HandleCdf(0.0f))
           .WillOnce(Return(std::expected<void, std::string>()));
     }
 

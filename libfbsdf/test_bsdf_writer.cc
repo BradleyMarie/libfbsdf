@@ -53,7 +53,7 @@ BsdfData::Coefficients BsdfData::SerializeCoefficients() const {
   BsdfData::Coefficients result;
   result.max_order = 0;
   for (const auto& list : series_) {
-    result.bounds.push_back(result.bounds.size());
+    result.bounds.push_back(result.coefficients.size());
     result.bounds.push_back(list.size());
     result.coefficients.insert(result.coefficients.end(), list.begin(),
                                list.end());
@@ -65,7 +65,8 @@ BsdfData::Coefficients BsdfData::SerializeCoefficients() const {
 void BsdfData::SetCdf(size_t basis_function, size_t sample_x, size_t sample_y,
                       float value) {
   size_t span_size = elevational_samples_.size() * elevational_samples_.size();
-  cdf_.at(span_size * basis_function) = value;
+  cdf_.at(span_size * basis_function + sample_y * elevational_samples_.size() +
+          sample_x) = value;
 }
 
 std::string MakeBsdfFile(const Flags& flags, const BsdfData& bsdf_data,
@@ -185,7 +186,7 @@ std::string MakeMinimalBsdfFile(float index_of_refraction, float roughness_top,
                                 float roughness_bottom) {
   BsdfData data(std::vector<float>({1.0f}), 1, 1);
   data.AddCoefficient(0, 0, 0, 1.0f);
-  data.SetCdf(0, 0, 0, 1.0f);
+  data.SetCdf(0, 0, 0, 0.0f);
 
   Flags flags{.is_bsdf = true, .uses_harmonic_extrapolation = false};
 

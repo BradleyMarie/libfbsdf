@@ -18,18 +18,40 @@ namespace libfbsdf {
 // defined and may grow or shrink in the future.
 class ValidatingBsdfReader : public BsdfReader {
  protected:
-  ValidatingBsdfReader(bool clamp_cdf = true,
-                       bool allow_duplicates_at_origin = true)
-      : clamp_cdf_(clamp_cdf),
-        allow_duplicates_at_origin_(allow_duplicates_at_origin) {}
+  // Controls validation rules applied during parsing.
+  struct ValidationOptions {
+    // If true, the longest series length set in the header is not validated
+    // against the length of series set in the file. By default, this
+    // validation will not be performed since the longest series length is
+    // not exposed directly by the ValidatingBsdfReader API.
+    bool ignore_longest_series_length = true;
+
+    // If true, the elevational samples are allowed to include the value zero
+    // up to two times. Duplicates of other values are still not allowed. By
+    // default, duplicate instances of zero are allowed since this seems to be
+    // fairly common in the wild.
+    bool allow_duplicates_at_origin = true;
+
+    // If true, the values of CDF are clamped to between 0.0 and 1.0 instead of
+    // returning validation failures. By default, this clamping is performed
+    // since inputs with CDF values slightly out of range seem to be fairly
+    // common in the wild.
+    bool clamp_cdf = true;
+  };
+
+  ValidatingBsdfReader(const ValidationOptions& options =
+                           ValidationOptions{
+                               .ignore_longest_series_length = true,
+                               .allow_duplicates_at_origin = true,
+                               .clamp_cdf = true})
+      : options_(options) {}
 
   // Called at the start of parsing an input and passes information parsed from
   // the header of the BSDF file. Returns the parts of the file that should
   // be parsed or an error if the file cannot be read by the reader.
   virtual std::expected<Options, std::string> Start(
       const Flags& flags, uint32_t num_basis_functions,
-      size_t num_color_channels, size_t longest_series_length,
-      float index_of_refraction, float roughness_top,
+      size_t num_color_channels, float index_of_refraction, float roughness_top,
       float roughness_bottom) = 0;
 
   // Provides an ordered list of the the elevational samples in one dimension.
@@ -74,6 +96,7 @@ class ValidatingBsdfReader : public BsdfReader {
   virtual void HandleParameterSamples(std::vector<float> samples) {}
 
  private:
+  ValidationOptions options_;
   std::vector<float> elevational_samples_;
   std::vector<float> cdf_;
   std::vector<std::pair<uint32_t, uint32_t>> series_;
@@ -89,10 +112,6 @@ class ValidatingBsdfReader : public BsdfReader {
   uint32_t num_parameters_ = 0u;
   uint32_t num_parameter_values_ = 0u;
   bool zero_duplicate_already_allowed_ = false;
-
-  // Validation relaxations
-  bool clamp_cdf_ = false;
-  bool allow_duplicates_at_origin_ = false;
 
  protected:
   // This class implements the entire BsdfReader interface with the exception of

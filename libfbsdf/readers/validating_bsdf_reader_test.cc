@@ -29,10 +29,12 @@ using ::testing::SizeIs;
 
 class StartFailsValidatingBsdfReader : public ValidatingBsdfReader {
  public:
-  std::expected<Options, std::string> Start(
-      const Flags& flags, uint32_t num_basis_functions,
-      size_t num_color_channels, size_t longest_series_length,
-      float index_of_refraction, float roughness_top, float roughness_bottom) {
+  std::expected<Options, std::string> Start(const Flags& flags,
+                                            uint32_t num_basis_functions,
+                                            size_t num_color_channels,
+                                            float index_of_refraction,
+                                            float roughness_top,
+                                            float roughness_bottom) {
     return std::unexpected("Start");
   }
 };
@@ -46,10 +48,15 @@ TEST(ValidatingBsdfReader, StartFails) {
 
 class MockValidatingBsdfReader : public ValidatingBsdfReader {
  public:
-  std::expected<Options, std::string> Start(
-      const Flags& flags, uint32_t num_basis_functions,
-      size_t num_color_channels, size_t longest_series_length,
-      float index_of_refraction, float roughness_top, float roughness_bottom) {
+  MockValidatingBsdfReader(bool relaxed = true)
+      : ValidatingBsdfReader({relaxed, relaxed, relaxed}) {}
+
+  std::expected<Options, std::string> Start(const Flags& flags,
+                                            uint32_t num_basis_functions,
+                                            size_t num_color_channels,
+                                            float index_of_refraction,
+                                            float roughness_top,
+                                            float roughness_bottom) {
     return Options();
   }
 
@@ -78,13 +85,43 @@ TEST(ValidatingBsdfReader, ParsesMinimal) {
   EXPECT_CALL(mock_reader, HandleParameterSampleCounts(ElementsAre(1)))
       .Times(1);
   EXPECT_CALL(mock_reader, HandleParameterSamples(ElementsAre(1.0f))).Times(1);
-  EXPECT_CALL(mock_reader, HandleCdf(ElementsAre(1.0f))).Times(1);
+  EXPECT_CALL(mock_reader, HandleCdf(ElementsAre(0.0f))).Times(1);
   EXPECT_CALL(mock_reader, HandleSeries(ElementsAre(std::make_pair(0, 1))))
       .Times(1);
   EXPECT_CALL(mock_reader, HandleCoefficients(ElementsAre(1.0f))).Times(1);
 
   auto result = mock_reader.ReadFrom(stream);
   EXPECT_TRUE(result);
+}
+
+TEST(ValidatingBsdfReader, TooLowElevationalSamples) {
+  BsdfData data(std::vector<float>({-1.5}), 1, 1);
+  data.AddCoefficient(0, 0, 0, std::numeric_limits<float>::quiet_NaN());
+  data.SetCdf(0, 0, 0, std::numeric_limits<float>::quiet_NaN());
+
+  Flags flags{.is_bsdf = true, .uses_harmonic_extrapolation = false};
+
+  std::stringstream stream(
+      MakeBsdfFile(flags, data, {}, {}, "", 1.0f, 1.0f, 1.0f));
+  auto result = MockValidatingBsdfReader().ReadFrom(stream);
+  ASSERT_FALSE(result);
+  EXPECT_EQ("Input contained elevational samples that were out of range",
+            result.error());
+}
+
+TEST(ValidatingBsdfReader, TooHighElevationalSamples) {
+  BsdfData data(std::vector<float>({1.5}), 1, 1);
+  data.AddCoefficient(0, 0, 0, std::numeric_limits<float>::quiet_NaN());
+  data.SetCdf(0, 0, 0, std::numeric_limits<float>::quiet_NaN());
+
+  Flags flags{.is_bsdf = true, .uses_harmonic_extrapolation = false};
+
+  std::stringstream stream(
+      MakeBsdfFile(flags, data, {}, {}, "", 1.0f, 1.0f, 1.0f));
+  auto result = MockValidatingBsdfReader().ReadFrom(stream);
+  ASSERT_FALSE(result);
+  EXPECT_EQ("Input contained elevational samples that were out of range",
+            result.error());
 }
 
 TEST(ValidatingBsdfReader, BadlyOrderedElevationalSamples) {
@@ -99,6 +136,189 @@ TEST(ValidatingBsdfReader, BadlyOrderedElevationalSamples) {
   auto result = MockValidatingBsdfReader().ReadFrom(stream);
   ASSERT_FALSE(result);
   EXPECT_EQ("Input contained improperly ordered elevational samples",
+            result.error());
+}
+
+TEST(ValidatingBsdfReader, InvalidStartingCdf) {
+  BsdfData data(std::vector<float>({0.0f}), 1, 1);
+  data.AddCoefficient(0, 0, 0, 1.0f);
+  data.SetCdf(0, 0, 0, 0.1f);
+
+  Flags flags{.is_bsdf = true, .uses_harmonic_extrapolation = false};
+
+  std::stringstream stream(
+      MakeBsdfFile(flags, data, {}, {}, "", 1.0f, 1.0f, 1.0f));
+  MockValidatingBsdfReader mock_reader(false);
+
+  EXPECT_CALL(mock_reader, HandleElevationalSamples(ElementsAre(0.0f)))
+      .Times(1);
+
+  auto result = mock_reader.ReadFrom(stream);
+  ASSERT_FALSE(result);
+  EXPECT_EQ("Input contained a CDF range that did not start with zero",
+            result.error());
+}
+
+TEST(ValidatingBsdfReader, TooLowCdf) {
+  BsdfData data(std::vector<float>({0.0f}), 1, 1);
+  data.AddCoefficient(0, 0, 0, 1.0f);
+  data.SetCdf(0, 0, 0, -0.5f);
+
+  Flags flags{.is_bsdf = true, .uses_harmonic_extrapolation = false};
+
+  std::stringstream stream(
+      MakeBsdfFile(flags, data, {}, {}, "", 1.0f, 1.0f, 1.0f));
+  MockValidatingBsdfReader mock_reader(false);
+
+  EXPECT_CALL(mock_reader, HandleElevationalSamples(ElementsAre(0.0f)))
+      .Times(1);
+
+  auto result = mock_reader.ReadFrom(stream);
+  ASSERT_FALSE(result);
+  EXPECT_EQ("Input contained a CDF value that was out of range",
+            result.error());
+}
+
+TEST(ValidatingBsdfReader, TooHighCdf) {
+  BsdfData data(std::vector<float>({0.0f}), 1, 1);
+  data.AddCoefficient(0, 0, 0, 1.0f);
+  data.SetCdf(0, 0, 0, 1.5f);
+
+  Flags flags{.is_bsdf = true, .uses_harmonic_extrapolation = false};
+
+  std::stringstream stream(
+      MakeBsdfFile(flags, data, {}, {}, "", 1.0f, 1.0f, 1.0f));
+  MockValidatingBsdfReader mock_reader(false);
+
+  EXPECT_CALL(mock_reader, HandleElevationalSamples(ElementsAre(0.0f)))
+      .Times(1);
+
+  auto result = mock_reader.ReadFrom(stream);
+  ASSERT_FALSE(result);
+  EXPECT_EQ("Input contained a CDF value that was out of range",
+            result.error());
+}
+
+TEST(ValidatingBsdfReader, ClampedLowCdf) {
+  BsdfData data(std::vector<float>({0.0f}), 1, 1);
+  data.AddCoefficient(0, 0, 0, 1.0f);
+  data.SetCdf(0, 0, 0, -0.5f);
+
+  Flags flags{.is_bsdf = true, .uses_harmonic_extrapolation = false};
+
+  std::stringstream stream(
+      MakeBsdfFile(flags, data, {}, {}, "", 1.0f, 1.0f, 1.0f));
+  MockValidatingBsdfReader mock_reader;
+
+  EXPECT_CALL(mock_reader, HandleElevationalSamples(ElementsAre(0.0f)))
+      .Times(1);
+  EXPECT_CALL(mock_reader, HandleCdf(ElementsAre(0.0f))).Times(1);
+  EXPECT_CALL(mock_reader, HandleSeries(ElementsAre(std::make_pair(0, 1))))
+      .Times(1);
+  EXPECT_CALL(mock_reader, HandleCoefficients(ElementsAre(1.0f))).Times(1);
+
+  auto result = mock_reader.ReadFrom(stream);
+  EXPECT_TRUE(result);
+}
+
+TEST(ValidatingBsdfReader, ClampedHighCdf) {
+  BsdfData data(std::vector<float>({0.0, 0.5}), 1, 1);
+  data.AddCoefficient(0, 0, 0, 1.0f);
+  data.SetCdf(0, 0, 0, 0.0f);
+  data.SetCdf(0, 1, 0, 1.5f);
+  data.SetCdf(0, 0, 1, 1.0f);
+  data.SetCdf(0, 1, 1, 1.0f);
+
+  Flags flags{.is_bsdf = true, .uses_harmonic_extrapolation = false};
+
+  std::stringstream stream(
+      MakeBsdfFile(flags, data, {}, {}, "", 1.0f, 1.0f, 1.0f));
+  MockValidatingBsdfReader mock_reader;
+
+  EXPECT_CALL(mock_reader, HandleElevationalSamples(ElementsAre(0.0f, 0.5f)))
+      .Times(1);
+  EXPECT_CALL(mock_reader, HandleCdf(ElementsAre(0.0f, 1.0f, 1.0f, 1.0f)))
+      .Times(1);
+  EXPECT_CALL(mock_reader, HandleSeries(ElementsAre(
+                               std::make_pair(0, 1), std::make_pair(1, 0),
+                               std::make_pair(1, 0), std::make_pair(1, 0))))
+      .Times(1);
+  EXPECT_CALL(mock_reader, HandleCoefficients(ElementsAre(1.0f))).Times(1);
+
+  auto result = mock_reader.ReadFrom(stream);
+  EXPECT_TRUE(result);
+}
+
+TEST(ValidatingBsdfReader, TooLowLongestLength) {
+  BsdfData data(std::vector<float>({0.0f}), 1, 1);
+  data.AddCoefficient(0, 0, 0, 1.0f);
+  data.SetCdf(0, 0, 0, 0.0f);
+
+  Flags flags{.is_bsdf = true, .uses_harmonic_extrapolation = false};
+
+  std::string bsdf_file_bytes =
+      MakeBsdfFile(flags, data, {}, {}, "", 1.0f, 1.0f, 1.0f);
+  bsdf_file_bytes[20] = '\0';
+
+  std::stringstream stream(bsdf_file_bytes);
+  MockValidatingBsdfReader mock_reader(false);
+
+  EXPECT_CALL(mock_reader, HandleElevationalSamples(ElementsAre(0.0f)))
+      .Times(1);
+  EXPECT_CALL(mock_reader, HandleCdf(ElementsAre(0.0f))).Times(1);
+
+  auto result = mock_reader.ReadFrom(stream);
+  ASSERT_FALSE(result);
+  EXPECT_EQ(
+      "Input contained a series that was longer than the maximum length "
+      "defined in the input",
+      result.error());
+}
+
+TEST(ValidatingBsdfReader, TooHighOffset) {
+  BsdfData data(std::vector<float>({0.0f}), 1, 1);
+  data.AddCoefficient(0, 0, 0, 1.0f);
+  data.SetCdf(0, 0, 0, 0.0f);
+
+  Flags flags{.is_bsdf = true, .uses_harmonic_extrapolation = false};
+
+  std::string bsdf_file_bytes =
+      MakeBsdfFile(flags, data, {}, {}, "", 1.0f, 1.0f, 1.0f);
+  bsdf_file_bytes[74] = 16;
+
+  std::stringstream stream(bsdf_file_bytes);
+  MockValidatingBsdfReader mock_reader;
+
+  EXPECT_CALL(mock_reader, HandleElevationalSamples(ElementsAre(0.0f)))
+      .Times(1);
+  EXPECT_CALL(mock_reader, HandleCdf(ElementsAre(0.0f))).Times(1);
+
+  auto result = mock_reader.ReadFrom(stream);
+  ASSERT_FALSE(result);
+  EXPECT_EQ("Input contained an offset that was out of bounds", result.error());
+}
+
+TEST(ValidatingBsdfReader, TooLongLength) {
+  BsdfData data(std::vector<float>({0.0f}), 1, 1);
+  data.AddCoefficient(0, 0, 0, 1.0f);
+  data.SetCdf(0, 0, 0, 0.0f);
+
+  Flags flags{.is_bsdf = true, .uses_harmonic_extrapolation = false};
+
+  std::string bsdf_file_bytes =
+      MakeBsdfFile(flags, data, {}, {}, "", 1.0f, 1.0f, 1.0f);
+  bsdf_file_bytes[78] = 16;
+
+  std::stringstream stream(bsdf_file_bytes);
+  MockValidatingBsdfReader mock_reader;
+
+  EXPECT_CALL(mock_reader, HandleElevationalSamples(ElementsAre(0.0f)))
+      .Times(1);
+  EXPECT_CALL(mock_reader, HandleCdf(ElementsAre(0.0f))).Times(1);
+
+  auto result = mock_reader.ReadFrom(stream);
+  ASSERT_FALSE(result);
+  EXPECT_EQ("Input contained a series that extended out of bounds",
             result.error());
 }
 

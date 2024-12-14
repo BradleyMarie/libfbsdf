@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <expected>
-#include <iostream>
 #include <limits>
 #include <string>
 #include <utility>
@@ -66,15 +65,14 @@ std::expected<BsdfReader::Options, std::string> ValidatingBsdfReader::Start(
   zero_duplicate_already_allowed_ = false;
 
   return Start(flags, num_basis_functions, num_color_channels,
-               longest_series_length, index_of_refraction, roughness_top,
-               roughness_bottom);
+               index_of_refraction, roughness_top, roughness_bottom);
 }
 
 std::expected<void, std::string> ValidatingBsdfReader::HandleElevationalSample(
     float value) {
-  if (auto valid = ValidateElevationalSamples(elevational_samples_, value,
-                                              allow_duplicates_at_origin_,
-                                              zero_duplicate_already_allowed_);
+  if (auto valid = ValidateElevationalSamples(
+          elevational_samples_, value, options_.allow_duplicates_at_origin,
+          zero_duplicate_already_allowed_);
       !valid) {
     return valid;
   }
@@ -91,10 +89,15 @@ std::expected<void, std::string> ValidatingBsdfReader::HandleElevationalSample(
 }
 
 std::expected<void, std::string> ValidatingBsdfReader::HandleCdf(float value) {
-  if (clamp_cdf_) {
+  if (options_.clamp_cdf) {
     value = std::clamp(value, 0.0f, 1.0f);
   } else if (value < 0.0f || value > 1.0f) {
     return std::unexpected("Input contained a CDF value that was out of range");
+  }
+
+  if (cdf_.empty() && value != 0.0f) {
+    return std::unexpected(
+        "Input contained a CDF range that did not start with zero");
   }
 
   cdf_.reserve(num_elevational_samples_2d_);
@@ -114,7 +117,8 @@ std::expected<void, std::string> ValidatingBsdfReader::HandleSeries(
     return std::unexpected("Input contained an offset that was out of bounds");
   }
 
-  if (length > length_longest_series_) {
+  if (!options_.ignore_longest_series_length &&
+      length > length_longest_series_) {
     return std::unexpected(
         "Input contained a series that was longer than the maximum length "
         "defined in the input");
