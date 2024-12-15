@@ -65,3 +65,4 @@ of working with `BsdfReader` directly.
 
 libFBSDF currently is not strongly versioned and it is recommended that users
 update to the latest commit from the main branch as often as is reasonably
+possible.
