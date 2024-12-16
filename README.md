@@ -3,7 +3,7 @@
 [![Test Status](https://github.com/BradleyMarie/libfbsdf/actions/workflows/c-cpp.yml/badge.svg?branch=main)](https://github.com/BradleyMarie/libfbsdf/actions/workflows/c-cpp.yml)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/BradleyMarie/libfbsdf/master/LICENSE)
 
-A zero-dependency LayerLab Fourier BSDF file reader for C++23. While there is no
+A zero-dependency LayerLab Fourier BSDF reader for C++23. While there is no
 formal definition of the Fourier BSDF format, informal documentation can be
 found in the source code of [LayerLab](https://github.com/wjakob/layerlab/blob/3e5257e3076a7287d1da9bbd4ee3f05fe37d3ee3/src/storage.cpp).
 
@@ -14,6 +14,8 @@ import libFBSDF into your workspace by adding a snippet like the following into
 your `MODULE.bazel` file.
 
 ```
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 http_archive(
     name = "libfbsdf",
     sha256 = "6864b7a04e80b3e3a1653fcb0e94eacc48f069d1289cfd7e63436ec30d131d45",
@@ -28,25 +30,25 @@ snapshot.
 
 libFBSDF code is structured with the core modules residing in the `libfbsdf`
 directory. `bsdf_reader` contains the parent `BsdfReader` class that contains
-the logic for parsing out the contents of an FBSDF file. This class does very
-little validation of its own other than ensuring that tokens are valid floats
-and that the file is long enough to contain all of the parameters decribed in
-its header.
+the logic for parsing out the contents of a Fourier BSDF input. This class does
+very little validation of its own other than ensuring that tokens are valid
+floats and that the input is long enough to contain all of the parameters
+decribed in its header.
 
 The `BsdfReader` class is designed for extension and exposes a small public API
 as well as a protected API that derived classes must implement.
 
 Also inside the `libfbsdf` directory is the `readers` directory. This directory
-contains pre-implemented readers for BSDF files that do more validation than the
-base `BsdfReader` class and reduce the amount of code clients would need to
+contains pre-implemented readers for BSDF inputs that do more validation than
+the base `BsdfReader` class and reduce the amount of code clients would need to
 implement.
 
 Currently, this extra validation is provided by `ValidatingBsdfReader` which
 layers on top of `BsdfReader` class and validates a number of of properties to
-ensure that the file is well formed. Notably, this includes validation of the
+ensure that the input is well formed. Notably, this includes validation of the
 ordering of the coordinates of the elevational sample and bounds checks on the
-Fourier series described in the files. `ValidatingBsdfReader` also aggregates
-the contents of the file into vectors since it is expected that most clients
+Fourier series described in the input. `ValidatingBsdfReader` also aggregates
+the contents of the input into vectors since it is expected that most clients
 of this library would want to do so anyways.
 
 ## Examples
