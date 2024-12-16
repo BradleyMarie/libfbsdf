@@ -14,19 +14,16 @@ import libFBSDF into your workspace by adding a snippet like the following into
 your `MODULE.bazel` file.
 
 ```
-http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-http_archive(
-    name = "libfbsdf",
-    sha256 = "6864b7a04e80b3e3a1653fcb0e94eacc48f069d1289cfd7e63436ec30d131d45",
-    strip_prefix = "libfbsdf-0cee10ccc48dd30a98c3185fb69ff78cf7d775ff",
-    url = "https://github.com/BradleyMarie/libfbsdf/archive/0cee10ccc48dd30a98c3185fb69ff78cf7d775ff.zip",
+bazel_dep(name = "libfbsdf")
+git_override(
+    module_name = "libfbsdf",
+    remote = "https://github.com/bradleymarie/libfbsdf.git",
+    commit = "bcdb2f9ddf987e6fef5c7963505e00f33809ebe1",
 )
 ```
 
-Note: You should update `url` and `strip_prefix` to point to the latest commit
-on the main branch and should also update `sha256` with the checksum from that
-snapshot.
+Note: You should update `commit` to reference the to the latest commit on the
+main branch.
 
 libFBSDF code is structured with the core modules residing in the `libfbsdf`
 directory. `bsdf_reader` contains the parent `BsdfReader` class that contains
