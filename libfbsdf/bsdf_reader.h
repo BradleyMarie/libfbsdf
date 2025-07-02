@@ -38,6 +38,7 @@ class BsdfReader {
     bool parse_metadata = true;
   };
 
+ private:
   // Called at the start of parsing an input and passes information parsed from
   // the header of the input. Returns the parts of the input that should
   // be parsed or an error if the input cannot be read by the reader.
@@ -107,12 +108,6 @@ class BsdfReader {
   //
   // Will be called once per input, if present.
   virtual std::expected<void, std::string> HandleMetadata(std::string data) {
-    return std::expected<void, std::string>();
-  }
-
-  // Called at the end of parsing after all values have been handled. Returns an
-  // error if the input cannot be read by the reader.
-  virtual std::expected<void, std::string> Finish() {
     return std::expected<void, std::string>();
   }
 };

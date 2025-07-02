@@ -72,7 +72,6 @@ class MockBsdfReader : public BsdfReader {
               (override));
   MOCK_METHOD((std::expected<void, std::string>), HandleMetadata, (std::string),
               (override));
-  MOCK_METHOD((std::expected<void, std::string>), Finish, (), (override));
 };
 
 TEST(BsdfReader, HandleElevationalSampleFails) {
@@ -201,32 +200,6 @@ TEST(BsdfReader, HandleMetadataFails) {
   EXPECT_EQ("HandleMetadata", result.error());
 }
 
-TEST(BsdfReader, FinishFails) {
-  std::stringstream stream(MakeMinimalBsdfFile(1.0f, 1.0f, 1.0f));
-
-  MockBsdfReader bsdf_reader;
-  EXPECT_CALL(bsdf_reader, HandleElevationalSample(_))
-      .WillRepeatedly(Return(std::expected<void, std::string>()));
-  EXPECT_CALL(bsdf_reader, HandleSampleCount(_))
-      .WillRepeatedly(Return(std::expected<void, std::string>()));
-  EXPECT_CALL(bsdf_reader, HandleSamplePosition(_))
-      .WillRepeatedly(Return(std::expected<void, std::string>()));
-  EXPECT_CALL(bsdf_reader, HandleCdf(_))
-      .WillRepeatedly(Return(std::expected<void, std::string>()));
-  EXPECT_CALL(bsdf_reader, HandleSeries(_, _))
-      .WillRepeatedly(Return(std::expected<void, std::string>()));
-  EXPECT_CALL(bsdf_reader, HandleCoefficient(_))
-      .WillRepeatedly(Return(std::expected<void, std::string>()));
-  EXPECT_CALL(bsdf_reader, HandleMetadata(_))
-      .WillRepeatedly(Return(std::expected<void, std::string>()));
-  EXPECT_CALL(bsdf_reader, Finish())
-      .WillRepeatedly(Return(std::unexpected("Finish")));
-
-  auto result = bsdf_reader.ReadFrom(stream);
-  ASSERT_FALSE(result);
-  EXPECT_EQ("Finish", result.error());
-}
-
 class TestBsdfReader : public BsdfReader {
  public:
   TestBsdfReader(bool is_bsdf, bool uses_harmonic_extrapolation,
@@ -317,7 +290,6 @@ class TestBsdfReader : public BsdfReader {
               (override));
   MOCK_METHOD((std::expected<void, std::string>), HandleMetadata, (std::string),
               (override));
-  MOCK_METHOD((std::expected<void, std::string>), Finish, (), (override));
 
  private:
   bool is_bsdf_;
@@ -388,9 +360,6 @@ TEST(BsdfReader, TestDataLoads) {
             .WillOnce(Return(std::expected<void, std::string>()));
       }
 
-      EXPECT_CALL(test_reader, Finish())
-          .WillOnce(Return(std::expected<void, std::string>()));
-
       EXPECT_TRUE(test_reader.ReadFrom(*OpenTestData(file_name)));
     }
   }
@@ -414,9 +383,6 @@ TEST(BsdfReader, ParsesEmptyBsdf) {
         /*index_of_refraction=*/1.0f,
         /*roughness_top=*/1.0f,
         /*roughness_bottom=*/1.0f, parsed_parameters);
-
-    EXPECT_CALL(test_reader, Finish())
-        .WillOnce(Return(std::expected<void, std::string>()));
 
     std::stringstream stream(MakeEmptyBsdfFile(1.0f, 1.0f, 1.0f));
     EXPECT_TRUE(test_reader.ReadFrom(stream));
@@ -476,9 +442,6 @@ TEST(BsdfReader, ParsesMinimalBsdf) {
       EXPECT_CALL(test_reader, HandleMetadata("meta"))
           .WillOnce(Return(std::expected<void, std::string>()));
     }
-
-    EXPECT_CALL(test_reader, Finish())
-        .WillOnce(Return(std::expected<void, std::string>()));
 
     std::stringstream stream(MakeMinimalBsdfFile(1.0f, 1.0f, 1.0f));
     EXPECT_TRUE(test_reader.ReadFrom(stream));
@@ -541,9 +504,6 @@ TEST(BsdfReader, TruncatedMinimalBsdfFails) {
             .WillRepeatedly(Return(std::expected<void, std::string>()));
       }
 
-      EXPECT_CALL(test_reader, Finish())
-          .WillRepeatedly(Return(std::expected<void, std::string>()));
-
       std::stringstream stream(minimal_bsdf.substr(0, i));
       auto result = test_reader.ReadFrom(stream);
       ASSERT_FALSE(result);
@@ -584,8 +544,6 @@ TEST(BsdfReader, NonFiniteBsdfFails) {
     EXPECT_CALL(test_reader, HandleCoefficient(_))
         .WillRepeatedly(Return(std::expected<void, std::string>()));
     EXPECT_CALL(test_reader, HandleMetadata(_))
-        .WillRepeatedly(Return(std::expected<void, std::string>()));
-    EXPECT_CALL(test_reader, Finish())
         .WillRepeatedly(Return(std::expected<void, std::string>()));
 
     bool should_fail = false;

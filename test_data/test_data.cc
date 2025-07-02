@@ -13,8 +13,8 @@
 #include <utility>
 #include <vector>
 
-#include "third_party/zlib/zlib.h"
 #include "tools/cpp/runfiles/runfiles.h"
+#include "zlib.h"
 
 namespace libfbsdf {
 namespace testing {

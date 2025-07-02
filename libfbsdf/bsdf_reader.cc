@@ -236,7 +236,7 @@ std::expected<void, std::string> BsdfReader::ReadFrom(std::istream& input) {
     return std::unexpected(UnexpectedEOF());
   }
 
-  return Finish();
+  return std::expected<void, std::string>();
 }
 
 // This allows us to assume that uint32_t -> size_t conversions are not lossy

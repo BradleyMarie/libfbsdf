@@ -16,7 +16,7 @@ cc_library(
     visibility = ["//libfbsdf:__subpackages__"],
     deps = [
         "//libfbsdf:bsdf_reader",
-        "@bazel_tools//third_party/zlib",
         "@bazel_tools//tools/cpp/runfiles",
+        "@zlib",
     ],
 )
