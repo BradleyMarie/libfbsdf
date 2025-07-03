@@ -56,7 +56,7 @@ class ValidatingBsdfReader : public BsdfReader {
 
   // Provides an ordered list of the the elevational samples in one dimension.
   //
-  // Will be called once per input.
+  // Will be called once per input, if present.
   virtual std::expected<void, std::string> HandleElevationalSamples(
       std::vector<float> samples) {
     return std::expected<void, std::string>();
@@ -64,7 +64,7 @@ class ValidatingBsdfReader : public BsdfReader {
 
   // Provides the two dimensional CDF for each elevational sample.
   //
-  // Will be called in order once per basis function in the input.
+  // Will be called in order once per basis function in the input, if present.
   virtual std::expected<void, std::string> HandleCdf(
       std::vector<float> values) {
     return std::expected<void, std::string>();
@@ -75,7 +75,7 @@ class ValidatingBsdfReader : public BsdfReader {
   // the coefficients array and the second element in each pair contains the
   // number of coefficients in the Fourier series for that elevational sample.
   //
-  // Will be called once per input.
+  // Will be called once per input, if present.
   //
   // NOTE: For inputs with multiple basis functions or multiple color channels
   //       that the start index represents the index of the first color channel
@@ -89,7 +89,7 @@ class ValidatingBsdfReader : public BsdfReader {
 
   // The list of Fourier coefficients stored in the input.
   //
-  // Will be called once per input.
+  // Will be called once per input, if present.
   virtual std::expected<void, std::string> HandleCoefficients(
       std::vector<float> coefficients) {
     return std::expected<void, std::string>();
@@ -97,7 +97,7 @@ class ValidatingBsdfReader : public BsdfReader {
 
   // TODO: Document what this contains
   //
-  // Will be called once per input.
+  // Will be called once per input, if present.
   virtual std::expected<void, std::string> HandleParameterSampleCounts(
       std::vector<uint32_t> sample_counts) {
     return std::expected<void, std::string>();
@@ -105,7 +105,7 @@ class ValidatingBsdfReader : public BsdfReader {
 
   // TODO: Document what this contains
   //
-  // Will be called once per input.
+  // Will be called once per input, if present.
   virtual std::expected<void, std::string> HandleParameterSamples(
       std::vector<float> samples) {
     return std::expected<void, std::string>();
@@ -114,7 +114,7 @@ class ValidatingBsdfReader : public BsdfReader {
   // Provides the metadata in the input as a string. Returns an error if the
   // input cannot be read by the reader.
   //
-  // Will be called once per input.
+  // Will be called once per input, if present.
   virtual std::expected<void, std::string> HandleMetadata(std::string data) {
     return std::expected<void, std::string>();
   }
@@ -135,6 +135,7 @@ class ValidatingBsdfReader : public BsdfReader {
   uint32_t num_coefficients_ = 0u;
   uint32_t num_parameters_ = 0u;
   uint32_t num_parameter_values_ = 0u;
+  size_t num_coefficients_per_length_ = 0u;
   bool zero_duplicate_already_allowed_ = false;
 
   std::expected<Options, std::string> Start(

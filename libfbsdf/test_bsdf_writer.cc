@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -33,19 +34,25 @@ void WriteFloat(std::string& output, float value) {
 BsdfData::BsdfData(std::vector<float> elevational_samples,
                    size_t num_basis_functions, size_t num_channels)
     : elevational_samples_(std::move(elevational_samples)),
-      series_(elevational_samples_.size() * elevational_samples_.size() *
-              num_channels),
+      series_(elevational_samples_.size() * elevational_samples_.size()),
       cdf_(elevational_samples_.size() * elevational_samples_.size() *
                num_basis_functions,
            0.0f),
       num_basis_functions_(num_basis_functions),
-      num_channels_(num_channels) {}
+      num_channels_(num_channels) {
+  for (auto& list : series_) {
+    for (size_t i = 0; i < num_basis_functions; i++) {
+      for (size_t j = 0; j < num_channels; j++) {
+        list.emplace_back();
+      }
+    }
+  }
+}
 
-void BsdfData::AddCoefficient(size_t channel, size_t sample_x, size_t sample_y,
-                              float value) {
-  size_t start_index =
-      elevational_samples_.size() * elevational_samples_.size() * channel;
-  series_.at(start_index + sample_y * elevational_samples_.size() + sample_x)
+void BsdfData::AddCoefficient(size_t basis_function, size_t channel,
+                              size_t sample_x, size_t sample_y, float value) {
+  series_.at(sample_y * elevational_samples_.size() + sample_x)
+      .at(basis_function * num_channels_ + channel)
       .push_back(value);
 }
 
@@ -53,11 +60,24 @@ BsdfData::Coefficients BsdfData::SerializeCoefficients() const {
   BsdfData::Coefficients result;
   result.max_order = 0;
   for (const auto& list : series_) {
+    if (list.empty()) {
+      continue;
+    }
+
+    size_t num_coefficients = list[0].size();
+    result.max_order = std::max(result.max_order, num_coefficients);
     result.bounds.push_back(result.coefficients.size());
-    result.bounds.push_back(list.size());
-    result.coefficients.insert(result.coefficients.end(), list.begin(),
-                               list.end());
-    result.max_order = std::max(result.max_order, list.size());
+    result.bounds.push_back(num_coefficients);
+
+    for (const auto& channel : list) {
+      if (channel.size() != num_coefficients) {
+        throw std::logic_error(
+            "all channels must have the same number of coefficients");
+      }
+
+      result.coefficients.insert(result.coefficients.end(), channel.begin(),
+                                 channel.end());
+    }
   }
   return result;
 }

@@ -48,9 +48,14 @@ std::expected<BsdfReader::Options, std::string> ValidatingBsdfReader::Start(
     size_t num_parameters, size_t num_parameter_values,
     size_t metadata_size_bytes, float index_of_refraction, float roughness_top,
     float roughness_bottom) {
-  if (num_elevational_samples != 0 &&
-      num_elevational_samples >
-          std::numeric_limits<size_t>::max() / num_elevational_samples) {
+  num_coefficients_per_length_ = num_basis_functions * num_color_channels;
+
+  if ((num_elevational_samples != 0 &&
+       num_elevational_samples >
+           std::numeric_limits<size_t>::max() / num_elevational_samples) ||
+      (num_basis_functions != 0 && num_color_channels != 0 &&
+       num_coefficients_per_length_ / num_color_channels !=
+           num_basis_functions)) {
     return std::unexpected("Input is too large to fit into memory");
   }
 
@@ -126,8 +131,13 @@ std::expected<void, std::string> ValidatingBsdfReader::HandleSeries(
         "defined in the input");
   }
 
-  if (num_coefficients_ < length ||
-      (length != 0u && num_coefficients_ - length < offset)) {
+  size_t series_length = num_coefficients_per_length_ * length;
+  if (series_length / num_coefficients_per_length_ != length) {
+    return std::unexpected("Input is too large to fit into memory");
+  }
+
+  if (num_coefficients_ < series_length ||
+      (series_length != 0u && num_coefficients_ - series_length < offset)) {
     return std::unexpected(
         "Input contained a series that extended out of bounds");
   }

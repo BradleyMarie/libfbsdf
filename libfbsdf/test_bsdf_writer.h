@@ -23,8 +23,13 @@ class BsdfData {
     return elevational_samples_;
   }
 
+  void AddCoefficient(size_t basis_function, size_t channel, size_t sample_x,
+                      size_t sample_y, float value);
+
   void AddCoefficient(size_t channel, size_t sample_x, size_t sample_y,
-                      float value);
+                      float value) {
+    AddCoefficient(0, channel, sample_x, sample_y, value);
+  }
 
   struct Coefficients {
     std::vector<uint32_t> bounds;
@@ -45,7 +50,7 @@ class BsdfData {
 
  private:
   std::vector<float> elevational_samples_;
-  std::vector<std::vector<float>> series_;
+  std::vector<std::vector<std::vector<float>>> series_;
   std::vector<float> cdf_;
   size_t num_basis_functions_;
   size_t num_channels_;

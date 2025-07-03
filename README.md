@@ -57,8 +57,11 @@ for how to work with the library.
 Additionally, the code in the `readers` directory can be used as a reference
 for working with the `BsdfReader` class directly.
 
-It is expected that most clients will implement `ValidatingBsdfReader` instead
-of working with `BsdfReader` directly.
+It is expected that most clients will simply call the `ReadFromStandardBsdf`
+function instead of implement a `ValidatingBsdfReader` or `BsdfReader`. For
+clients that need more functionality than `ReadFromStandardBsdf` provides, it is
+expected that they would implement implement `ValidatingBsdfReader` instead of
+implemmenting `BsdfReader` directly.
 
 ## Versioning
 
