@@ -125,7 +125,7 @@ std::expected<ReadFromStandardBsdfResult, std::string> ReadFromStandardBsdf(
   result.roughness_bottom = bsdf_reader.roughness_bottom;
 
   std::vector<float>* outputs[3] = {
-      &result.y_coefficients, &result.r_coefficients, &result.g_coefficients};
+      &result.y_coefficients, &result.r_coefficients, &result.b_coefficients};
   for (auto [start, length] : bsdf_reader.interleaved_extents) {
     result.series.emplace_back(result.y_coefficients.size(), length);
 

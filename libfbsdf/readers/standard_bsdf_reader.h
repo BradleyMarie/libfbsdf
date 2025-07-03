@@ -16,7 +16,7 @@ struct ReadFromStandardBsdfResult {
   std::vector<float> cdf;
   std::vector<float> y_coefficients;
   std::vector<float> r_coefficients;
-  std::vector<float> g_coefficients;
+  std::vector<float> b_coefficients;
   std::vector<std::pair<size_t, size_t>> series;
   float index_of_refraction;
   float roughness_top;

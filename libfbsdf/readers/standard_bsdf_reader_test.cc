@@ -240,7 +240,7 @@ TEST(ValidatingBsdfReader, OneColorChannel) {
   EXPECT_THAT(result->y_coefficients,
               ElementsAre(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0));
   EXPECT_THAT(result->r_coefficients, IsEmpty());
-  EXPECT_THAT(result->g_coefficients, IsEmpty());
+  EXPECT_THAT(result->b_coefficients, IsEmpty());
   EXPECT_EQ(1.0, result->index_of_refraction);
   EXPECT_EQ(2.0, result->roughness_top);
   EXPECT_EQ(3.0, result->roughness_bottom);
@@ -297,7 +297,7 @@ TEST(ValidatingBsdfReader, ThreeColorChannel) {
               ElementsAre(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0));
   EXPECT_THAT(result->r_coefficients,
               ElementsAre(2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0));
-  EXPECT_THAT(result->g_coefficients,
+  EXPECT_THAT(result->b_coefficients,
               ElementsAre(3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0));
   EXPECT_EQ(1.0, result->index_of_refraction);
   EXPECT_EQ(2.0, result->roughness_top);
