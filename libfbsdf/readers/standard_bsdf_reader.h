@@ -11,7 +11,7 @@
 
 namespace libfbsdf {
 
-struct ReadStandardBsdfResult {
+struct ReadFromStandardBsdfResult {
   std::vector<float> elevational_samples;
   std::vector<float> cdf;
   std::vector<float> y_coefficients;
@@ -38,7 +38,7 @@ struct ReadStandardBsdfResult {
 // Additionally, for BSDF inputs containing three color channels, this function
 // will also handle the process of de-interleaving the three channels so that
 // each channel is stored separately and updating the series extents to match.
-std::expected<ReadStandardBsdfResult, std::string> ReadFromStandardBsdf(
+std::expected<ReadFromStandardBsdfResult, std::string> ReadFromStandardBsdf(
     std::istream& input);
 
 }  // namespace libfbsdf

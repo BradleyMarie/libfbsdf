@@ -104,7 +104,7 @@ std::expected<void, std::string> StandardBsdfReader::HandleCoefficients(
 
 }  // namespace
 
-std::expected<ReadStandardBsdfResult, std::string> ReadFromStandardBsdf(
+std::expected<ReadFromStandardBsdfResult, std::string> ReadFromStandardBsdf(
     std::istream& input) {
   StandardBsdfReader bsdf_reader;
   if (std::expected<void, std::string> error = bsdf_reader.ReadFrom(input);
@@ -117,7 +117,7 @@ std::expected<ReadStandardBsdfResult, std::string> ReadFromStandardBsdf(
         "The input must contain at least 3 elevational samples");
   }
 
-  ReadStandardBsdfResult result;
+  ReadFromStandardBsdfResult result;
   result.elevational_samples = std::move(bsdf_reader.elevational_samples);
   result.cdf = std::move(bsdf_reader.cdf);
   result.index_of_refraction = bsdf_reader.index_of_refraction;
