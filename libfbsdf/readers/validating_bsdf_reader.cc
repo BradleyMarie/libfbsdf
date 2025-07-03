@@ -80,12 +80,13 @@ std::expected<void, std::string> ValidatingBsdfReader::HandleElevationalSample(
   elevational_samples_.reserve(num_elevational_samples_1d_);
   elevational_samples_.push_back(value);
 
+  std::expected<void, std::string> result;
   if (elevational_samples_.size() == num_elevational_samples_1d_) {
-    HandleElevationalSamples(std::move(elevational_samples_));
+    result = HandleElevationalSamples(std::move(elevational_samples_));
     elevational_samples_.clear();
   }
 
-  return std::expected<void, std::string>();
+  return result;
 }
 
 std::expected<void, std::string> ValidatingBsdfReader::HandleCdf(float value) {
@@ -103,12 +104,13 @@ std::expected<void, std::string> ValidatingBsdfReader::HandleCdf(float value) {
   cdf_.reserve(num_elevational_samples_2d_);
   cdf_.push_back(value);
 
+  std::expected<void, std::string> result;
   if (cdf_.size() == num_elevational_samples_2d_) {
-    HandleCdf(std::move(cdf_));
+    result = HandleCdf(std::move(cdf_));
     cdf_.clear();
   }
 
-  return std::expected<void, std::string>();
+  return result;
 }
 
 std::expected<void, std::string> ValidatingBsdfReader::HandleSeries(
@@ -133,12 +135,13 @@ std::expected<void, std::string> ValidatingBsdfReader::HandleSeries(
   series_.reserve(num_elevational_samples_2d_);
   series_.emplace_back(offset, length);
 
+  std::expected<void, std::string> result;
   if (series_.size() == num_elevational_samples_2d_) {
-    HandleSeries(std::move(series_));
+    result = HandleSeries(std::move(series_));
     series_.clear();
   }
 
-  return std::expected<void, std::string>();
+  return result;
 }
 
 std::expected<void, std::string> ValidatingBsdfReader::HandleCoefficient(
@@ -146,12 +149,13 @@ std::expected<void, std::string> ValidatingBsdfReader::HandleCoefficient(
   coefficients_.reserve(num_coefficients_);
   coefficients_.push_back(value);
 
+  std::expected<void, std::string> result;
   if (coefficients_.size() == num_coefficients_) {
-    HandleCoefficients(std::move(coefficients_));
+    result = HandleCoefficients(std::move(coefficients_));
     coefficients_.clear();
   }
 
-  return std::expected<void, std::string>();
+  return result;
 }
 
 std::expected<void, std::string> ValidatingBsdfReader::HandleSampleCount(
@@ -159,12 +163,13 @@ std::expected<void, std::string> ValidatingBsdfReader::HandleSampleCount(
   parameter_sample_counts_.reserve(num_parameters_);
   parameter_sample_counts_.push_back(value);
 
+  std::expected<void, std::string> result;
   if (parameter_sample_counts_.size() == num_parameters_) {
-    HandleParameterSampleCounts(std::move(parameter_sample_counts_));
+    result = HandleParameterSampleCounts(std::move(parameter_sample_counts_));
     parameter_sample_counts_.clear();
   }
 
-  return std::expected<void, std::string>();
+  return result;
 }
 
 std::expected<void, std::string> ValidatingBsdfReader::HandleSamplePosition(
@@ -172,12 +177,13 @@ std::expected<void, std::string> ValidatingBsdfReader::HandleSamplePosition(
   parameter_samples_.reserve(num_parameter_values_);
   parameter_samples_.push_back(value);
 
+  std::expected<void, std::string> result;
   if (parameter_samples_.size() == num_parameter_values_) {
-    HandleParameterSamples(std::move(parameter_samples_));
+    result = HandleParameterSamples(std::move(parameter_samples_));
     parameter_samples_.clear();
   }
 
-  return std::expected<void, std::string>();
+  return result;
 }
 
 // This allows us to assume that uint32_t -> size_t conversions are not lossy
