@@ -39,7 +39,7 @@ class StandardBsdfReader final : public ValidatingBsdfReader {
       std::vector<float> values) override;
 
   std::expected<void, std::string> HandleSeries(
-      std::vector<std::pair<uint32_t, uint32_t>> series) override;
+      std::vector<std::pair<uint32_t, uint32_t>> series_extents) override;
 
   std::expected<void, std::string> HandleCoefficients(
       std::vector<float> coefficients) override;
@@ -91,8 +91,8 @@ std::expected<void, std::string> StandardBsdfReader::HandleCdf(
 }
 
 std::expected<void, std::string> StandardBsdfReader::HandleSeries(
-    std::vector<std::pair<uint32_t, uint32_t>> series) {
-  interleaved_extents = std::move(series);
+    std::vector<std::pair<uint32_t, uint32_t>> series_extents) {
+  interleaved_extents = std::move(series_extents);
   return std::expected<void, std::string>();
 }
 
@@ -127,7 +127,7 @@ std::expected<ReadFromStandardBsdfResult, std::string> ReadFromStandardBsdf(
   std::vector<float>* outputs[3] = {
       &result.y_coefficients, &result.r_coefficients, &result.b_coefficients};
   for (auto [start, length] : bsdf_reader.interleaved_extents) {
-    result.series.emplace_back(result.y_coefficients.size(), length);
+    result.series_extents.emplace_back(result.y_coefficients.size(), length);
 
     size_t next_coefficient = start;
     for (uint32_t channel = 0; channel < bsdf_reader.num_color_channels;

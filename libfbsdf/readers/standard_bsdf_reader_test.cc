@@ -26,6 +26,7 @@ using ::libfbsdf::testing::MakeMinimalBsdfFile;
 using ::libfbsdf::testing::OpenTestData;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
+using ::testing::Pair;
 
 TEST(StandardBsdfReader, NotABsdf) {
   BsdfData data(std::vector<float>({0.0f}), 1, 1);
@@ -239,6 +240,10 @@ TEST(ValidatingBsdfReader, OneColorChannel) {
   ASSERT_TRUE(result);
   EXPECT_THAT(result->y_coefficients,
               ElementsAre(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0));
+  EXPECT_THAT(
+      result->series_extents,
+      ElementsAre(Pair(0, 1), Pair(1, 1), Pair(2, 1), Pair(3, 1), Pair(4, 1),
+                  Pair(5, 1), Pair(6, 1), Pair(7, 1), Pair(8, 1)));
   EXPECT_THAT(result->r_coefficients, IsEmpty());
   EXPECT_THAT(result->b_coefficients, IsEmpty());
   EXPECT_EQ(1.0, result->index_of_refraction);
@@ -299,6 +304,10 @@ TEST(ValidatingBsdfReader, ThreeColorChannel) {
               ElementsAre(2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0));
   EXPECT_THAT(result->b_coefficients,
               ElementsAre(3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0));
+  EXPECT_THAT(
+      result->series_extents,
+      ElementsAre(Pair(0, 1), Pair(1, 1), Pair(2, 1), Pair(3, 1), Pair(4, 1),
+                  Pair(5, 1), Pair(6, 1), Pair(7, 1), Pair(8, 1)));
   EXPECT_EQ(1.0, result->index_of_refraction);
   EXPECT_EQ(2.0, result->roughness_top);
   EXPECT_EQ(3.0, result->roughness_bottom);
